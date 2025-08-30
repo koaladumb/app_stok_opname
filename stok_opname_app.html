@@ -50,6 +50,46 @@
         .dropdown-menu-active {
             display: block;
         }
+        
+        /* Custom styling for the searchable dropdown */
+        .searchable-dropdown-container {
+            position: relative;
+        }
+        .searchable-dropdown-menu {
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 0.5rem;
+            position: absolute;
+            width: 100%;
+            z-index: 20;
+            display: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            background-color: white;
+            border: 1px solid #e5e7eb;
+        }
+        .searchable-dropdown-menu.active {
+            display: block;
+        }
+        .searchable-dropdown-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.1s ease;
+        }
+        .searchable-dropdown-item:hover {
+            background-color: #f3f4f6;
+        }
+        .searchable-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            outline: none;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+        .searchable-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -115,18 +155,15 @@
             </div>
             <form id="add-stock-form">
                 <div class="space-y-4">
-                    <!-- Input Pencarian -->
+                    <!-- Dropdown Produk dengan Fitur Pencarian -->
                     <div class="flex flex-col">
-                        <label for="stock-product-search" class="text-sm font-medium text-gray-700 mb-1">Cari Produk</label>
-                        <input type="text" id="stock-product-search" placeholder="Ketik nama atau kode produk..."
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <!-- Dropdown Produk -->
-                    <div class="flex flex-col">
-                        <label for="stock-product" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
-                        <select id="stock-product" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Pilih Produk --</option>
-                        </select>
+                        <label for="stock-product-searchable-input" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
+                        <div class="searchable-dropdown-container">
+                            <input type="text" id="stock-product-searchable-input" placeholder="Cari produk..." required
+                                class="searchable-input">
+                            <div id="stock-product-dropdown-menu" class="searchable-dropdown-menu"></div>
+                            <input type="hidden" id="stock-product-id">
+                        </div>
                     </div>
                     <!-- Input Tanggal -->
                     <div class="flex flex-col">
@@ -162,18 +199,15 @@
             </div>
             <form id="out-stock-form">
                 <div class="space-y-4">
-                    <!-- Input Pencarian -->
+                    <!-- Dropdown Produk dengan Fitur Pencarian -->
                     <div class="flex flex-col">
-                        <label for="out-stock-product-search" class="text-sm font-medium text-gray-700 mb-1">Cari Produk</label>
-                        <input type="text" id="out-stock-product-search" placeholder="Ketik nama atau kode produk..."
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <!-- Dropdown Produk -->
-                    <div class="flex flex-col">
-                        <label for="out-stock-product" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
-                        <select id="out-stock-product" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Pilih Produk --</option>
-                        </select>
+                        <label for="out-stock-product-searchable-input" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
+                        <div class="searchable-dropdown-container">
+                            <input type="text" id="out-stock-product-searchable-input" placeholder="Cari produk..." required
+                                class="searchable-input">
+                            <div id="out-stock-product-dropdown-menu" class="searchable-dropdown-menu"></div>
+                            <input type="hidden" id="out-stock-product-id">
+                        </div>
                     </div>
                     <!-- Input Tanggal -->
                     <div class="flex flex-col">
@@ -225,18 +259,15 @@
             </div>
             <form id="opname-form">
                 <div class="space-y-4">
-                    <!-- Input Pencarian -->
+                    <!-- Dropdown Produk dengan Fitur Pencarian -->
                     <div class="flex flex-col">
-                        <label for="opname-product-search" class="text-sm font-medium text-gray-700 mb-1">Cari Produk</label>
-                        <input type="text" id="opname-product-search" placeholder="Ketik nama atau kode produk..."
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <!-- Dropdown Produk -->
-                    <div class="flex flex-col">
-                        <label for="opname-product" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
-                        <select id="opname-product" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <option value="">-- Pilih Produk --</option>
-                        </select>
+                        <label for="opname-product-searchable-input" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
+                        <div class="searchable-dropdown-container">
+                            <input type="text" id="opname-product-searchable-input" placeholder="Cari produk..." required
+                                class="searchable-input">
+                            <div id="opname-product-dropdown-menu" class="searchable-dropdown-menu"></div>
+                            <input type="hidden" id="opname-product-id">
+                        </div>
                     </div>
                     <!-- Input Jumlah Fisik -->
                     <div class="flex flex-col">
@@ -443,8 +474,9 @@
         const stockModal = document.getElementById('stock-modal');
         const closeStockModalButton = document.getElementById('close-stock-modal');
         const addStockForm = document.getElementById('add-stock-form');
-        const stockProductSearchInput = document.getElementById('stock-product-search');
-        const stockProductSelect = document.getElementById('stock-product');
+        const stockProductIdInput = document.getElementById('stock-product-id');
+        const stockProductSearchInput = document.getElementById('stock-product-searchable-input');
+        const stockProductDropdownMenu = document.getElementById('stock-product-dropdown-menu');
         const stockDateInput = document.getElementById('stock-date');
         const stockQuantityInput = document.getElementById('stock-quantity');
         const stockNotesInput = document.getElementById('stock-notes');
@@ -454,8 +486,9 @@
         const outStockModal = document.getElementById('out-stock-modal');
         const closeOutStockModalButton = document.getElementById('close-out-stock-modal');
         const outStockForm = document.getElementById('out-stock-form');
-        const outStockProductSearchInput = document.getElementById('out-stock-product-search');
-        const outStockProductSelect = document.getElementById('out-stock-product');
+        const outStockProductIdInput = document.getElementById('out-stock-product-id');
+        const outStockProductSearchInput = document.getElementById('out-stock-product-searchable-input');
+        const outStockProductDropdownMenu = document.getElementById('out-stock-product-dropdown-menu');
         const outStockDateInput = document.getElementById('out-stock-date');
         const outStockQuantityInput = document.getElementById('out-stock-quantity');
         const outStockNotesInput = document.getElementById('out-stock-notes');
@@ -483,8 +516,9 @@
         const opnameModal = document.getElementById('opname-modal');
         const closeOpnameModalButton = document.getElementById('close-opname-modal');
         const opnameForm = document.getElementById('opname-form');
-        const opnameProductSearchInput = document.getElementById('opname-product-search');
-        const opnameProductSelect = document.getElementById('opname-product');
+        const opnameProductIdInput = document.getElementById('opname-product-id');
+        const opnameProductSearchInput = document.getElementById('opname-product-searchable-input');
+        const opnameProductDropdownMenu = document.getElementById('opname-product-dropdown-menu');
         const opnamePhysicalCountInput = document.getElementById('opname-physical-count');
         const opnameNotesInput = document.getElementById('opname-notes');
 
@@ -534,12 +568,10 @@
 
         // Fungsi untuk menampilkan modal tambah stok
         function showStockModal() {
-            populateProductDropdown(stockProductSelect, '');
-            stockDateInput.valueAsDate = new Date();
-            stockNotesInput.value = '';
             toggleModal(stockModal, true);
             stockProductSearchInput.value = ''; // Kosongkan input pencarian
-            stockProductSearchInput.focus(); // Fokuskan ke input pencarian
+            stockProductIdInput.value = ''; // Kosongkan id produk
+            renderSearchableDropdown(stockProductSearchInput, stockProductDropdownMenu);
         }
         
         // Fungsi untuk menyembunyikan modal tambah stok
@@ -550,12 +582,10 @@
 
         // Fungsi untuk menampilkan modal stok keluar
         function showOutStockModal() {
-            populateProductDropdown(outStockProductSelect, '');
-            outStockDateInput.valueAsDate = new Date();
-            outStockNotesInput.value = '';
             toggleModal(outStockModal, true);
             outStockProductSearchInput.value = '';
-            outStockProductSearchInput.focus();
+            outStockProductIdInput.value = '';
+            renderSearchableDropdown(outStockProductSearchInput, outStockProductDropdownMenu);
         }
         
         // Fungsi untuk menyembunyikan modal stok keluar
@@ -566,12 +596,10 @@
 
         // FUNGSI BARU: MENAMPILKAN MODAL OPNAME
         function showOpnameModal() {
-            populateProductDropdown(opnameProductSelect, '');
-            opnamePhysicalCountInput.value = '';
-            opnameNotesInput.value = '';
             toggleModal(opnameModal, true);
             opnameProductSearchInput.value = '';
-            opnameProductSearchInput.focus();
+            opnameProductIdInput.value = '';
+            renderSearchableDropdown(opnameProductSearchInput, opnameProductDropdownMenu);
         }
         
         // FUNGSI BARU: MENYEMBUNYIKAN MODAL OPNAME
@@ -579,37 +607,85 @@
             toggleModal(opnameModal, false);
             opnameForm.reset();
         }
-
-        // Mengisi dropdown produk di modal dengan filter
-        function populateProductDropdown(selectElement, searchQuery = '') {
-            selectElement.innerHTML = '<option value="">-- Pilih Produk --</option>';
+        
+        // FUNGSI BARU: RENDERING SEARCHABLE DROPDOWN
+        function renderSearchableDropdown(inputElement, menuElement) {
+            const query = inputElement.value.toLowerCase().trim();
+            menuElement.innerHTML = '';
             
             const filteredProducts = stockData.filter(item => 
-                item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                (item.code && item.code.toLowerCase().includes(searchQuery.toLowerCase()))
+                item.name.toLowerCase().includes(query) || 
+                (item.code && item.code.toLowerCase().includes(query))
             );
 
+            if (filteredProducts.length === 0) {
+                const noResultItem = document.createElement('div');
+                noResultItem.classList.add('searchable-dropdown-item', 'text-gray-500');
+                noResultItem.textContent = 'Tidak ada produk ditemukan';
+                menuElement.appendChild(noResultItem);
+                menuElement.classList.add('active');
+                return;
+            }
+
             filteredProducts.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item.id;
-                option.textContent = `${item.name}${item.code ? ' - ' + item.code : ''}`;
-                selectElement.appendChild(option);
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('searchable-dropdown-item');
+                itemDiv.textContent = `${item.name}${item.code ? ' - ' + item.code : ''}`;
+                itemDiv.dataset.id = item.id;
+                itemDiv.dataset.name = item.name;
+                itemDiv.dataset.code = item.code || '';
+                
+                // Add click listener to select an item
+                itemDiv.addEventListener('click', () => {
+                    inputElement.value = itemDiv.textContent;
+                    // Find the corresponding hidden input by id
+                    const hiddenInputId = inputElement.id.replace('searchable-input', 'id');
+                    document.getElementById(hiddenInputId).value = item.id;
+                    menuElement.classList.remove('active');
+                });
+                
+                menuElement.appendChild(itemDiv);
+            });
+            
+            menuElement.classList.add('active');
+        }
+
+        // Setup event listeners for searchable dropdowns
+        function setupSearchableDropdowns() {
+            // Add Stock Modal
+            stockProductSearchInput.addEventListener('input', () => {
+                renderSearchableDropdown(stockProductSearchInput, stockProductDropdownMenu);
+            });
+            stockProductSearchInput.addEventListener('focus', () => {
+                renderSearchableDropdown(stockProductSearchInput, stockProductDropdownMenu);
+            });
+            
+            // Out Stock Modal
+            outStockProductSearchInput.addEventListener('input', () => {
+                renderSearchableDropdown(outStockProductSearchInput, outStockProductDropdownMenu);
+            });
+            outStockProductSearchInput.addEventListener('focus', () => {
+                renderSearchableDropdown(outStockProductSearchInput, outStockProductDropdownMenu);
+            });
+            
+            // Opname Modal
+            opnameProductSearchInput.addEventListener('input', () => {
+                renderSearchableDropdown(opnameProductSearchInput, opnameProductDropdownMenu);
+            });
+            opnameProductSearchInput.addEventListener('focus', () => {
+                renderSearchableDropdown(opnameProductSearchInput, opnameProductDropdownMenu);
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', (event) => {
+                if (!event.target.closest('.searchable-dropdown-container')) {
+                    stockProductDropdownMenu.classList.remove('active');
+                    outStockProductDropdownMenu.classList.remove('active');
+                    opnameProductDropdownMenu.classList.remove('active');
+                }
             });
         }
         
-        // Menyiapkan event listener untuk pencarian di dropdown
-        function setupSearchableDropdowns() {
-            stockProductSearchInput.addEventListener('input', () => {
-                populateProductDropdown(stockProductSelect, stockProductSearchInput.value);
-            });
-            outStockProductSearchInput.addEventListener('input', () => {
-                populateProductDropdown(outStockProductSelect, outStockProductSearchInput.value);
-            });
-            opnameProductSearchInput.addEventListener('input', () => {
-                populateProductDropdown(opnameProductSelect, opnameProductSearchInput.value);
-            });
-        }
-
         // Memuat data dari localStorage saat aplikasi dimulai
         function loadData() {
             const stockDataJson = localStorage.getItem(STORAGE_KEY);
@@ -1065,7 +1141,7 @@
 
         addStockForm.addEventListener('submit', function(event) {
             event.preventDefault();
-            const productId = stockProductSelect.value;
+            const productId = stockProductIdInput.value;
             const quantity = parseInt(stockQuantityInput.value, 10);
             const date = stockDateInput.value;
             const notes = stockNotesInput.value.trim();
@@ -1105,7 +1181,7 @@
 
         outStockForm.addEventListener('submit', function(event) {
             event.preventDefault();
-            const productId = outStockProductSelect.value;
+            const productId = outStockProductIdInput.value;
             const quantity = parseInt(outStockQuantityInput.value, 10);
             const date = outStockDateInput.value;
             const notes = outStockNotesInput.value.trim();
@@ -1145,7 +1221,7 @@
 
         opnameForm.addEventListener('submit', function(event) {
             event.preventDefault();
-            const productId = opnameProductSelect.value;
+            const productId = opnameProductIdInput.value;
             const physicalCount = parseInt(opnamePhysicalCountInput.value, 10);
             const notes = opnameNotesInput.value.trim();
             
