@@ -38,6 +38,17 @@
         .modal-container:not(.active) .modal-content {
             transform: translateY(-50px);
         }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 10;
+        }
+        .dropdown-container:hover .dropdown-menu {
+            display: block;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -242,44 +253,41 @@
                         class="w-full md:w-auto bg-green-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-600 btn-animation">
                     ➕ Tambah Produk
                 </button>
-                <div class="flex flex-col md:flex-row gap-4">
-                    <button id="show-add-stock-modal-button"
-                            class="w-full md:w-auto bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 btn-animation">
-                        📦 Tambah Stok
-                    </button>
-                    <button id="show-out-stock-modal-button"
-                            class="w-full md:w-auto bg-red-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-600 btn-animation">
-                        📦 Stok Keluar
-                    </button>
-                    <button id="show-opname-modal-button"
-                            class="w-full md:w-auto bg-orange-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-orange-600 btn-animation">
-                        📝 Opname Stok
-                    </button>
-                </div>
-            </div>
 
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                 <div class="flex flex-col md:flex-row gap-4">
-                    <button id="backup-data-button"
-                            class="w-full md:w-auto bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 btn-animation">
-                        💾 Backup Data
+                <!-- Dropdown untuk Aksi Stok -->
+                <div class="relative dropdown-container">
+                    <button class="bg-indigo-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-600 btn-animation w-full md:w-auto">
+                        Aksi Stok
                     </button>
-                    <button id="restore-data-button"
-                            class="w-full md:w-auto bg-yellow-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-yellow-600 btn-animation">
-                        📦 Restore Data
-                    </button>
-                    <button id="delete-all-data-button"
-                            class="w-full md:w-auto bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 btn-animation">
-                        🗑️ Hapus Semua Data
-                    </button>
+                    <div class="dropdown-menu absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl">
+                        <a href="#" id="show-add-stock-modal-button" class="block px-4 py-2 text-gray-800 hover:bg-indigo-500 hover:text-white">📦 Tambah Stok</a>
+                        <a href="#" id="show-out-stock-modal-button" class="block px-4 py-2 text-gray-800 hover:bg-red-500 hover:text-white">📦 Stok Keluar</a>
+                        <a href="#" id="show-opname-modal-button" class="block px-4 py-2 text-gray-800 hover:bg-orange-500 hover:text-white">📝 Opname Stok</a>
+                    </div>
                 </div>
-                <div class="flex flex-col md:flex-row gap-4">
-                    <button id="export-pdf-button" class="w-full md:w-auto bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 btn-animation">
-                        📄 Ekspor PDF
+
+                <!-- Dropdown untuk Opsi Data -->
+                <div class="relative dropdown-container">
+                    <button class="bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 btn-animation w-full md:w-auto">
+                        Opsi Data
                     </button>
-                    <button id="export-xlsx-button" class="w-full md:w-auto bg-green-700 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-800 btn-animation">
-                        📊 Ekspor XLSX
+                    <div class="dropdown-menu absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl">
+                        <a href="#" id="backup-data-button" class="block px-4 py-2 text-gray-800 hover:bg-purple-600 hover:text-white">💾 Backup Data</a>
+                        <a href="#" id="restore-data-button" class="block px-4 py-2 text-gray-800 hover:bg-yellow-500 hover:text-white">📦 Restore Data</a>
+                        <hr class="my-1 border-gray-200">
+                        <a href="#" id="delete-all-data-button" class="block px-4 py-2 text-gray-800 hover:bg-red-600 hover:text-white">🗑️ Hapus Semua Data</a>
+                    </div>
+                </div>
+
+                <!-- Dropdown untuk Ekspor -->
+                <div class="relative dropdown-container">
+                    <button class="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 btn-animation w-full md:w-auto">
+                        Ekspor
                     </button>
+                    <div class="dropdown-menu absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl">
+                        <a href="#" id="export-pdf-button" class="block px-4 py-2 text-gray-800 hover:bg-gray-600 hover:text-white">📄 Ekspor PDF Produk</a>
+                        <a href="#" id="export-xlsx-button" class="block px-4 py-2 text-gray-800 hover:bg-green-700 hover:text-white">📊 Ekspor XLSX Produk</a>
+                    </div>
                 </div>
             </div>
 
@@ -339,14 +347,16 @@
 
         <!-- Bagian Baru untuk Riwayat Transaksi -->
         <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-4xl mt-8">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Riwayat Transaksi Stok</h2>
-            <div class="flex justify-end items-center mb-4 gap-4">
-                <button id="export-history-pdf-button" class="w-full md:w-auto bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 btn-animation">
-                    📄 Ekspor Riwayat PDF
-                </button>
-                <button id="export-history-xlsx-button" class="w-full md:w-auto bg-green-700 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-800 btn-animation">
-                    📊 Ekspor Riwayat XLSX
-                </button>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                <h2 class="text-2xl font-semibold text-gray-700 md:self-start">Riwayat Transaksi Stok</h2>
+                <div class="flex gap-4">
+                    <button id="export-history-pdf-button" class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 btn-animation">
+                        📄 Ekspor PDF
+                    </button>
+                    <button id="export-history-xlsx-button" class="bg-green-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-800 btn-animation">
+                        📊 Ekspor XLSX
+                    </button>
+                </div>
             </div>
             <div class="overflow-x-auto rounded-lg shadow-inner">
                 <table class="w-full text-left whitespace-nowrap bg-gray-50">
@@ -391,6 +401,8 @@
         const backupDataButton = document.getElementById('backup-data-button');
         const exportPdfButton = document.getElementById('export-pdf-button');
         const exportXlsxButton = document.getElementById('export-xlsx-button');
+        const exportHistoryPdfButton = document.getElementById('export-history-pdf-button');
+        const exportHistoryXlsxButton = document.getElementById('export-history-xlsx-button');
 
         // Referensi untuk fitur Impor/Restore
         const restoreDataButton = document.getElementById('restore-data-button');
@@ -431,8 +443,6 @@
 
         // Referensi untuk Riwayat Transaksi
         const historyList = document.getElementById('history-list');
-        const exportHistoryPdfButton = document.getElementById('export-history-pdf-button');
-        const exportHistoryXlsxButton = document.getElementById('export-history-xlsx-button');
 
         // Referensi untuk Opname Stok
         const showOpnameModalButton = document.getElementById('show-opname-modal-button');
@@ -823,7 +833,8 @@
         });
 
         // Listener untuk tombol "Restore Data", yang sekarang mengklik input file tersembunyi
-        restoreDataButton.addEventListener('click', () => {
+        restoreDataButton.addEventListener('click', (e) => {
+            e.preventDefault(); // Mencegah navigasi default link
             importFileInput.click();
         });
 
@@ -864,7 +875,8 @@
         // ==========================================
 
         // Listener untuk tombol Ekspor PDF
-        exportPdfButton.addEventListener('click', () => {
+        exportPdfButton.addEventListener('click', (e) => {
+            e.preventDefault(); // Mencegah navigasi default link
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -889,7 +901,8 @@
         });
 
         // Listener untuk tombol Ekspor XLSX
-        exportXlsxButton.addEventListener('click', () => {
+        exportXlsxButton.addEventListener('click', (e) => {
+            e.preventDefault(); // Mencegah navigasi default link
             const data = [
                 ["Nama Produk", "Kode Produk", "Stok Minimum", "Stok Saat Ini"],
                 ...filteredData.map(item => [item.name, item.code || '-', item.minStock || '-', item.stock || 0])
@@ -902,7 +915,8 @@
         });
 
         // Listener untuk tombol Ekspor Riwayat PDF
-        exportHistoryPdfButton.addEventListener('click', () => {
+        exportHistoryPdfButton.addEventListener('click', (e) => {
+            e.preventDefault(); // Mencegah navigasi default link
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -929,7 +943,8 @@
         });
 
         // Listener untuk tombol Ekspor Riwayat XLSX
-        exportHistoryXlsxButton.addEventListener('click', () => {
+        exportHistoryXlsxButton.addEventListener('click', (e) => {
+            e.preventDefault(); // Mencegah navigasi default link
             const data = [
                 ["Tanggal", "Nama Produk", "Kode Produk", "Tipe", "Jumlah", "Sisa Stok"],
                 ...historyData.map(t => [t.date, t.productName, t.productCode || '-', t.type, t.quantity, t.remainingStock || 0])
@@ -967,7 +982,10 @@
         // ==========================================
         
         // Listener untuk tombol "Tambah Stok"
-        showAddStockModalButton.addEventListener('click', showStockModal);
+        showAddStockModalButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            showStockModal();
+        });
 
         // Listener untuk tombol menutup modal stok
         closeStockModalButton.addEventListener('click', hideStockModal);
@@ -978,6 +996,138 @@
                 hideStockModal();
             }
         });
+
+        addStockForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const productId = stockProductSelect.value;
+            const quantity = parseInt(stockQuantityInput.value, 10);
+            const date = stockDateInput.value;
+            
+            const product = stockData.find(item => item.id === productId);
+            if (product) {
+                product.stock += quantity;
+                addTransaction(product.id, product.name, product.code, quantity, 'Masuk', date, product.stock);
+                saveData();
+                filteredData = [...stockData];
+                renderData();
+                hideStockModal();
+            } else {
+                console.error("Produk tidak ditemukan.");
+            }
+        });
+
+        // ==========================================
+        // LOGIKA STOK KELUAR
+        // ==========================================
+
+        // Listener untuk tombol "Stok Keluar"
+        showOutStockModalButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            showOutStockModal();
+        });
+
+        // Listener untuk tombol menutup modal stok keluar
+        closeOutStockModalButton.addEventListener('click', hideOutStockModal);
+
+        // Listener untuk menutup modal stok keluar saat mengklik di luar konten
+        outStockModal.addEventListener('click', (event) => {
+            if (event.target === outStockModal) {
+                hideOutStockModal();
+            }
+        });
+
+        outStockForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const productId = outStockProductSelect.value;
+            const quantity = parseInt(outStockQuantityInput.value, 10);
+            const date = outStockDateInput.value;
+            
+            const product = stockData.find(item => item.id === productId);
+            if (product && product.stock >= quantity) {
+                product.stock -= quantity;
+                addTransaction(product.id, product.name, product.code, -quantity, 'Keluar', date, product.stock);
+                saveData();
+                filteredData = [...stockData];
+                renderData();
+                hideOutStockModal();
+            } else {
+                console.error("Jumlah stok tidak mencukupi.");
+            }
+        });
+
+        // ==========================================
+        // LOGIKA OPNAME STOK
+        // ==========================================
+        
+        // Listener untuk tombol "Opname Stok"
+        showOpnameModalButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            showOpnameModal();
+        });
+
+        // Listener untuk tombol menutup modal opname
+        closeOpnameModalButton.addEventListener('click', hideOpnameModal);
+
+        // Listener untuk menutup modal opname saat mengklik di luar
+        opnameModal.addEventListener('click', (event) => {
+            if (event.target === opnameModal) {
+                hideOpnameModal();
+            }
+        });
+
+        opnameForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const productId = opnameProductSelect.value;
+            const physicalCount = parseInt(opnamePhysicalCountInput.value, 10);
+            
+            const product = stockData.find(item => item.id === productId);
+            if (product) {
+                const difference = physicalCount - product.stock;
+                product.stock = physicalCount;
+                addTransaction(product.id, product.name, product.code, difference, 'Opname', new Date().toISOString().slice(0, 10), product.stock);
+                saveData();
+                filteredData = [...stockData];
+                renderData();
+                hideOpnameModal();
+            } else {
+                console.error("Produk tidak ditemukan.");
+            }
+        });
+        
+        // ==========================================
+        // LOGIKA PENCARIAN
+        // ==========================================
+        
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase().trim();
+            filteredData = stockData.filter(item => 
+                item.name.toLowerCase().includes(query) ||
+                (item.code && item.code.toLowerCase().includes(query))
+            );
+            currentPage = 1;
+            renderData();
+        });
+
+
+        // ==========================================
+        // LOGIKA PAGINASI
+        // ==========================================
+
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderData();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderData();
+            }
+        });
+
         // FUNGSI BARU: HAPUS SEMUA DATA
         function clearAllData() {
             localStorage.removeItem(STORAGE_KEY);
@@ -990,7 +1140,8 @@
         }
 
         // Event listener untuk tombol Hapus Semua Data
-        deleteAllDataButton.addEventListener('click', () => {
+        deleteAllDataButton.addEventListener('click', (e) => {
+            e.preventDefault();
             toggleModal(confirmDeleteAllModal, true);
         });
 
