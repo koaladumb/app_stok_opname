@@ -309,6 +309,9 @@
                 return;
             }
 
+            // Tutup modal form produk terlebih dahulu
+            hideItemModal();
+
             if (id) {
                 // Mode Edit
                 const index = stockData.findIndex(item => item.id === id);
@@ -333,7 +336,6 @@
             }
             saveData();
             renderData();
-            hideItemModal();
         });
 
         // Fungsi untuk mengisi form saat tombol edit diklik
