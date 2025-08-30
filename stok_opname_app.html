@@ -296,8 +296,10 @@
                         <tr>
                             <th class="py-3 px-6 text-left">Tanggal</th>
                             <th class="py-3 px-6 text-left">Nama Produk</th>
+                            <th class="py-3 px-6 text-left">Kode Produk</th>
                             <th class="py-3 px-6 text-left">Tipe</th>
                             <th class="py-3 px-6 text-left">Jumlah</th>
+                            <th class="py-3 px-6 text-left">Sisa Stok</th>
                         </tr>
                     </thead>
                     <tbody id="history-list" class="text-gray-600 text-sm font-light">
@@ -466,7 +468,13 @@
             }
             const historyDataJson = localStorage.getItem(HISTORY_KEY);
             if (historyDataJson) {
-                historyData = JSON.parse(historyDataJson);
+                const loadedHistory = JSON.parse(historyDataJson);
+                // Tambahkan fallback untuk data riwayat yang lebih lama tanpa kode produk dan sisa stok
+                historyData = loadedHistory.map(item => ({
+                    ...item,
+                    productCode: item.productCode || '-',
+                    remainingStock: item.remainingStock || 0
+                }));
             }
             filteredData = [...stockData]; // Inisialisasi data yang difilter
             renderData(); // Render data awal
@@ -535,7 +543,7 @@
         function renderHistory() {
             historyList.innerHTML = '';
             if (historyData.length === 0) {
-                historyList.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-gray-500">Belum ada riwayat transaksi.</td></tr>`;
+                historyList.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">Belum ada riwayat transaksi.</td></tr>`;
                 return;
             }
             
@@ -550,22 +558,26 @@
                 row.innerHTML = `
                     <td class="py-3 px-6">${transaction.date}</td>
                     <td class="py-3 px-6">${transaction.productName}</td>
+                    <td class="py-3 px-6">${transaction.productCode || '-'}</td>
                     <td class="py-3 px-6 font-semibold ${typeClass}">${transaction.type}</td>
                     <td class="py-3 px-6">${transaction.quantity}</td>
+                    <td class="py-3 px-6">${transaction.remainingStock || 0}</td>
                 `;
                 historyList.appendChild(row);
             });
         }
 
         // Fungsi untuk menambahkan transaksi ke riwayat
-        function addTransaction(productId, productName, quantity, type, date) {
+        function addTransaction(productId, productName, productCode, quantity, type, date, remainingStock) {
             const newTransaction = {
                 id: crypto.randomUUID(),
                 productId,
                 productName,
+                productCode,
                 quantity,
                 type,
-                date
+                date,
+                remainingStock // Tambahkan sisa stok
             };
             historyData.push(newTransaction);
             saveHistory();
@@ -800,8 +812,8 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            const columns = ["Tanggal", "Nama Produk", "Tipe", "Jumlah"];
-            const data = historyData.map(t => [t.date, t.productName, t.type, t.quantity]);
+            const columns = ["Tanggal", "Nama Produk", "Kode Produk", "Tipe", "Jumlah", "Sisa Stok"];
+            const data = historyData.map(t => [t.date, t.productName, t.productCode || '-', t.type, t.quantity, t.remainingStock || 0]);
             
             doc.autoTable({
                 head: [columns],
@@ -811,9 +823,11 @@
                 theme: 'striped',
                 columnStyles: {
                     0: { cellWidth: 35 },
-                    1: { cellWidth: 60 },
-                    2: { cellWidth: 20 },
-                    3: { cellWidth: 20 },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 15 },
+                    4: { cellWidth: 15 },
+                    5: { cellWidth: 20 },
                 }
             });
 
@@ -823,8 +837,8 @@
         // Listener untuk tombol Ekspor Riwayat XLSX
         exportHistoryXlsxButton.addEventListener('click', () => {
             const data = [
-                ["Tanggal", "Nama Produk", "Tipe", "Jumlah"],
-                ...historyData.map(t => [t.date, t.productName, t.type, t.quantity])
+                ["Tanggal", "Nama Produk", "Kode Produk", "Tipe", "Jumlah", "Sisa Stok"],
+                ...historyData.map(t => [t.date, t.productName, t.productCode || '-', t.type, t.quantity, t.remainingStock || 0])
             ];
 
             const ws = XLSX.utils.aoa_to_sheet(data);
@@ -884,7 +898,7 @@
             if (item) {
                 item.stock += quantity;
                 saveData();
-                addTransaction(productId, item.name, quantity, 'Masuk', date); // Simpan transaksi
+                addTransaction(productId, item.name, item.code, quantity, 'Masuk', date, item.stock); // Simpan transaksi
                 renderData(); // Render ulang data setelah penambahan
                 hideStockModal(); // Tutup modal setelah data disimpan
             } else {
@@ -915,7 +929,7 @@
                 if (item.stock >= quantity) {
                     item.stock -= quantity;
                     saveData();
-                    addTransaction(productId, item.name, quantity, 'Keluar', date); // Simpan transaksi
+                    addTransaction(productId, item.name, item.code, quantity, 'Keluar', date, item.stock); // Simpan transaksi
                     renderData();
                     hideOutStockModal();
                 } else {
