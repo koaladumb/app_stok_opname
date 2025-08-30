@@ -39,6 +39,7 @@
             transform: translateY(-50px);
         }
 
+        /* Perbaikan Dropdown */
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -46,7 +47,9 @@
             left: 0;
             z-index: 10;
         }
-        .dropdown-container:hover .dropdown-menu {
+        /* Tambahkan hover pada .dropdown-container dan .dropdown-menu agar menu tetap terlihat saat mengarahkan kursor ke menu itu sendiri */
+        .dropdown-container:hover .dropdown-menu,
+        .dropdown-menu:hover {
             display: block;
         }
     </style>
@@ -282,7 +285,7 @@
                 <!-- Dropdown untuk Ekspor -->
                 <div class="relative dropdown-container">
                     <button class="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 btn-animation w-full md:w-auto">
-                        Ekspor
+                        Ekspor Produk
                     </button>
                     <div class="dropdown-menu absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl">
                         <a href="#" id="export-pdf-button" class="block px-4 py-2 text-gray-800 hover:bg-gray-600 hover:text-white">📄 Ekspor PDF Produk</a>
