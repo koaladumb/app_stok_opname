@@ -278,6 +278,34 @@
             <input type="file" id="import-file-input" accept=".json" class="hidden">
 
         </div>
+
+        <!-- Bagian Baru untuk Riwayat Transaksi -->
+        <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-4xl mt-8">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Riwayat Transaksi Stok</h2>
+            <div class="flex justify-end items-center mb-4 gap-4">
+                <button id="export-history-pdf-button" class="w-full md:w-auto bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 btn-animation">
+                    📄 Ekspor Riwayat PDF
+                </button>
+                <button id="export-history-xlsx-button" class="w-full md:w-auto bg-green-700 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-800 btn-animation">
+                    📊 Ekspor Riwayat XLSX
+                </button>
+            </div>
+            <div class="overflow-x-auto rounded-lg shadow-inner">
+                <table class="w-full text-left whitespace-nowrap bg-gray-50">
+                    <thead class="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                        <tr>
+                            <th class="py-3 px-6 text-left">Tanggal</th>
+                            <th class="py-3 px-6 text-left">Nama Produk</th>
+                            <th class="py-3 px-6 text-left">Tipe</th>
+                            <th class="py-3 px-6 text-left">Jumlah</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-list" class="text-gray-600 text-sm font-light">
+                        <!-- Riwayat transaksi akan dimasukkan di sini oleh JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
     
     <script type="module">
@@ -341,8 +369,16 @@
         const nextPageBtn = document.getElementById('next-page-btn');
         const pageInfoSpan = document.getElementById('page-info');
 
+        // Referensi untuk Riwayat Transaksi
+        const historyList = document.getElementById('history-list');
+        const exportHistoryPdfButton = document.getElementById('export-history-pdf-button');
+        const exportHistoryXlsxButton = document.getElementById('export-history-xlsx-button');
+
+
         const STORAGE_KEY = 'stok-opname-data';
+        const HISTORY_KEY = 'stok-opname-history'; // Kunci baru untuk riwayat
         let stockData = [];
+        let historyData = []; // Array baru untuk menyimpan riwayat
         let currentPage = 1;
         const itemsPerPage = 10;
         let filteredData = [];
@@ -418,9 +454,9 @@
 
         // Memuat data dari localStorage saat aplikasi dimulai
         function loadData() {
-            const data = localStorage.getItem(STORAGE_KEY);
-            if (data) {
-                stockData = JSON.parse(data);
+            const stockDataJson = localStorage.getItem(STORAGE_KEY);
+            if (stockDataJson) {
+                stockData = JSON.parse(stockDataJson);
                 // Menambahkan properti 'stock' jika belum ada
                 stockData.forEach(item => {
                     if (!item.stock) {
@@ -428,13 +464,23 @@
                     }
                 });
             }
+            const historyDataJson = localStorage.getItem(HISTORY_KEY);
+            if (historyDataJson) {
+                historyData = JSON.parse(historyDataJson);
+            }
             filteredData = [...stockData]; // Inisialisasi data yang difilter
             renderData(); // Render data awal
+            renderHistory(); // Render riwayat
         }
 
         // Menyimpan data ke localStorage
         function saveData() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(stockData));
+        }
+
+        // Menyimpan riwayat ke localStorage
+        function saveHistory() {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
         }
 
         // Merender data di tabel
@@ -484,6 +530,48 @@
                 stockList.appendChild(row);
             });
         }
+        
+        // Merender riwayat transaksi
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (historyData.length === 0) {
+                historyList.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-gray-500">Belum ada riwayat transaksi.</td></tr>`;
+                return;
+            }
+            
+            historyData.sort((a, b) => new Date(b.date) - new Date(a.date)); // Urutkan dari yang terbaru
+            
+            historyData.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
+                
+                let typeClass = transaction.type === 'Masuk' ? 'text-green-600' : 'text-red-600';
+
+                row.innerHTML = `
+                    <td class="py-3 px-6">${transaction.date}</td>
+                    <td class="py-3 px-6">${transaction.productName}</td>
+                    <td class="py-3 px-6 font-semibold ${typeClass}">${transaction.type}</td>
+                    <td class="py-3 px-6">${transaction.quantity}</td>
+                `;
+                historyList.appendChild(row);
+            });
+        }
+
+        // Fungsi untuk menambahkan transaksi ke riwayat
+        function addTransaction(productId, productName, quantity, type, date) {
+            const newTransaction = {
+                id: crypto.randomUUID(),
+                productId,
+                productName,
+                quantity,
+                type,
+                date
+            };
+            historyData.push(newTransaction);
+            saveHistory();
+            renderHistory();
+        }
+
 
         // Listener untuk file input, mengkonversi file menjadi data URI
         itemPhotoFileInput.addEventListener('change', (event) => {
@@ -605,7 +693,7 @@
         
         // Listener untuk tombol Backup, mengunduh file secara langsung
         backupDataButton.addEventListener('click', () => {
-            const dataToExport = localStorage.getItem(STORAGE_KEY);
+            const dataToExport = JSON.stringify({ stock: stockData, history: historyData }, null, 2);
             if (!dataToExport || dataToExport === '[]') {
                 console.error("Tidak ada data untuk di-backup.");
                 return;
@@ -644,16 +732,19 @@
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    if (Array.isArray(importedData)) {
-                        stockData = importedData;
+                    if (importedData && importedData.stock && importedData.history) {
+                        stockData = importedData.stock;
+                        historyData = importedData.history;
                         saveData();
+                        saveHistory();
                         // Perbarui data yang difilter dan render ulang
                         filteredData = [...stockData];
                         renderData();
+                        renderHistory();
                         console.log("Data berhasil di-restore!");
                         setTimeout(() => window.location.reload(), 500); // Segarkan halaman untuk memastikan data baru dimuat
                     } else {
-                        console.error("Data yang diimpor tidak valid. Pastikan itu adalah array JSON.");
+                        console.error("Data yang diimpor tidak valid. Pastikan itu adalah file backup dari aplikasi ini.");
                     }
                 } catch (error) {
                     console.error("Terjadi kesalahan saat memproses file JSON. Pastikan format file sudah benar.", error);
@@ -704,6 +795,44 @@
             XLSX.writeFile(wb, "daftar_stok.xlsx");
         });
 
+        // Listener untuk tombol Ekspor Riwayat PDF
+        exportHistoryPdfButton.addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const columns = ["Tanggal", "Nama Produk", "Tipe", "Jumlah"];
+            const data = historyData.map(t => [t.date, t.productName, t.type, t.quantity]);
+            
+            doc.autoTable({
+                head: [columns],
+                body: data,
+                startY: 20,
+                headStyles: { fillColor: [75, 85, 99] }, // Warna abu-abu gelap
+                theme: 'striped',
+                columnStyles: {
+                    0: { cellWidth: 35 },
+                    1: { cellWidth: 60 },
+                    2: { cellWidth: 20 },
+                    3: { cellWidth: 20 },
+                }
+            });
+
+            doc.save('riwayat_stok.pdf');
+        });
+
+        // Listener untuk tombol Ekspor Riwayat XLSX
+        exportHistoryXlsxButton.addEventListener('click', () => {
+            const data = [
+                ["Tanggal", "Nama Produk", "Tipe", "Jumlah"],
+                ...historyData.map(t => [t.date, t.productName, t.type, t.quantity])
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Riwayat Stok");
+            XLSX.writeFile(wb, "riwayat_stok.xlsx");
+        });
+
 
         // ==========================================
         // FITUR POP-UP
@@ -748,12 +877,14 @@
             
             const productId = stockProductSelect.value;
             const quantity = parseInt(stockQuantityInput.value, 10);
+            const date = stockDateInput.value;
             
             // Cari produk berdasarkan ID dan perbarui stoknya
             const item = stockData.find(p => p.id === productId);
             if (item) {
                 item.stock += quantity;
                 saveData();
+                addTransaction(productId, item.name, quantity, 'Masuk', date); // Simpan transaksi
                 renderData(); // Render ulang data setelah penambahan
                 hideStockModal(); // Tutup modal setelah data disimpan
             } else {
@@ -777,12 +908,14 @@
             
             const productId = outStockProductSelect.value;
             const quantity = parseInt(outStockQuantityInput.value, 10);
+            const date = outStockDateInput.value;
             
             const item = stockData.find(p => p.id === productId);
             if (item) {
                 if (item.stock >= quantity) {
                     item.stock -= quantity;
                     saveData();
+                    addTransaction(productId, item.name, quantity, 'Keluar', date); // Simpan transaksi
                     renderData();
                     hideOutStockModal();
                 } else {
