@@ -129,6 +129,41 @@
             </form>
         </div>
     </div>
+    
+    <!-- Modal Form Kurangi Stok (Stok Keluar) -->
+    <div id="out-stock-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-40">
+        <div class="modal-content bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-700">Stok Keluar</h2>
+                <button id="close-out-stock-modal" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <form id="out-stock-form">
+                <div class="space-y-4">
+                    <!-- Dropdown Produk -->
+                    <div class="flex flex-col">
+                        <label for="out-stock-product" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
+                        <select id="out-stock-product" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">-- Pilih Produk --</option>
+                        </select>
+                    </div>
+                    <!-- Input Tanggal -->
+                    <div class="flex flex-col">
+                        <label for="out-stock-date" class="text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                        <input type="date" id="out-stock-date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <!-- Input Jumlah Stok -->
+                    <div class="flex flex-col">
+                        <label for="out-stock-quantity" class="text-sm font-medium text-gray-700 mb-1">Jumlah Stok</label>
+                        <input type="number" id="out-stock-quantity" placeholder="Masukkan jumlah stok keluar" required min="1"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <button type="submit" class="w-full bg-red-600 text-white font-semibold py-3 rounded-lg hover:bg-red-700 btn-animation">
+                        Kurangi Stok
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal Konfirmasi Hapus Produk Terpilih -->
     <div id="confirm-delete-selected-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-50">
@@ -160,6 +195,10 @@
                     <button id="show-add-stock-modal-button"
                             class="w-full md:w-auto bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 btn-animation">
                         📦 Tambah Stok
+                    </button>
+                    <button id="show-out-stock-modal-button"
+                            class="w-full md:w-auto bg-red-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-600 btn-animation">
+                        📦 Stok Keluar
                     </button>
                     <button id="export-button"
                             class="w-full md:w-auto bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 btn-animation">
@@ -209,6 +248,17 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Kontrol Paginasi -->
+            <div id="pagination-controls" class="flex justify-center items-center space-x-4 mt-6">
+                <button id="prev-page-btn" class="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 btn-animation disabled:opacity-50 disabled:cursor-not-allowed">
+                    Sebelumnya
+                </button>
+                <span id="page-info" class="text-gray-700 font-medium">Halaman 1 dari 1</span>
+                <button id="next-page-btn" class="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 btn-animation disabled:opacity-50 disabled:cursor-not-allowed">
+                    Berikutnya
+                </button>
+            </div>
             
             <!-- Elemen input file tersembunyi untuk impor data -->
             <input type="file" id="import-file-input" accept=".json" class="hidden">
@@ -250,6 +300,15 @@
         const stockProductSelect = document.getElementById('stock-product');
         const stockDateInput = document.getElementById('stock-date');
         const stockQuantityInput = document.getElementById('stock-quantity');
+
+        // Referensi untuk fitur Stok Keluar baru
+        const showOutStockModalButton = document.getElementById('show-out-stock-modal-button');
+        const outStockModal = document.getElementById('out-stock-modal');
+        const closeOutStockModalButton = document.getElementById('close-out-stock-modal');
+        const outStockForm = document.getElementById('out-stock-form');
+        const outStockProductSelect = document.getElementById('out-stock-product');
+        const outStockDateInput = document.getElementById('out-stock-date');
+        const outStockQuantityInput = document.getElementById('out-stock-quantity');
         
         // Referensi untuk modal konfirmasi hapus massal baru
         const confirmDeleteSelectedModal = document.getElementById('confirm-delete-selected-modal');
@@ -261,8 +320,16 @@
         // Referensi untuk fitur pencarian
         const searchInput = document.getElementById('search-input');
 
+        // Referensi Paginasi
+        const prevPageBtn = document.getElementById('prev-page-btn');
+        const nextPageBtn = document.getElementById('next-page-btn');
+        const pageInfoSpan = document.getElementById('page-info');
+
         const STORAGE_KEY = 'stok-opname-data';
         let stockData = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let filteredData = [];
 
         // Fungsi terpusat untuk menampilkan atau menyembunyikan modal
         function toggleModal(modal, show) {
@@ -295,7 +362,7 @@
         // Fungsi untuk menampilkan modal tambah stok
         function showStockModal() {
             // Isi dropdown produk sebelum menampilkan modal
-            populateProductDropdown();
+            populateProductDropdown(stockProductSelect);
             // Atur tanggal hari ini secara default
             stockDateInput.valueAsDate = new Date();
             toggleModal(stockModal, true);
@@ -307,14 +374,29 @@
             addStockForm.reset(); // Reset form
         }
 
-        // Mengisi dropdown produk di modal tambah stok
-        function populateProductDropdown() {
-            stockProductSelect.innerHTML = '<option value="">-- Pilih Produk --</option>';
+        // Fungsi untuk menampilkan modal stok keluar
+        function showOutStockModal() {
+             // Isi dropdown produk sebelum menampilkan modal
+            populateProductDropdown(outStockProductSelect);
+            // Atur tanggal hari ini secara default
+            outStockDateInput.valueAsDate = new Date();
+            toggleModal(outStockModal, true);
+        }
+        
+        // Fungsi untuk menyembunyikan modal stok keluar
+        function hideOutStockModal() {
+            toggleModal(outStockModal, false);
+            outStockForm.reset(); // Reset form
+        }
+
+        // Mengisi dropdown produk di modal
+        function populateProductDropdown(selectElement) {
+            selectElement.innerHTML = '<option value="">-- Pilih Produk --</option>';
             stockData.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item.id;
                 option.textContent = `${item.name}${item.code ? ' - ' + item.code : ''}`;
-                stockProductSelect.appendChild(option);
+                selectElement.appendChild(option);
             });
         }
 
@@ -330,7 +412,8 @@
                     }
                 });
             }
-            renderData(stockData); // Render data awal
+            filteredData = [...stockData]; // Inisialisasi data yang difilter
+            renderData(); // Render data awal
         }
 
         // Menyimpan data ke localStorage
@@ -339,9 +422,19 @@
         }
 
         // Merender data di tabel
-        function renderData(dataToRender) {
+        function renderData() {
             stockList.innerHTML = '';
-            if (dataToRender.length === 0) {
+            
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const itemsToRender = filteredData.slice(startIndex, endIndex);
+
+            pageInfoSpan.textContent = `Halaman ${currentPage} dari ${totalPages || 1}`;
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+
+            if (itemsToRender.length === 0) {
                 stockList.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-500">Tidak ada produk yang tersimpan.</td></tr>`;
                 deleteSelectedButton.classList.add('hidden');
                 selectAllCheckbox.checked = false;
@@ -349,7 +442,7 @@
             }
             deleteSelectedButton.classList.remove('hidden');
 
-            dataToRender.forEach(item => {
+            itemsToRender.forEach(item => {
                 const row = document.createElement('tr');
                 row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
                 const photoHtml = item.photo ? `<img src="${item.photo}" alt="Foto Produk" class="max-w-[100px] max-h-[100px] object-contain mx-auto rounded">` : `-`;
@@ -430,7 +523,9 @@
                 stockData.push(newItem);
             }
             saveData();
-            renderData(stockData);
+            // Perbarui data yang difilter dan render ulang
+            filteredData = [...stockData];
+            renderData();
         });
 
         // Fungsi untuk mengisi form saat tombol edit diklik
@@ -470,7 +565,9 @@
             const selectedIds = Array.from(document.querySelectorAll('.product-checkbox:checked')).map(cb => cb.dataset.id);
             stockData = stockData.filter(item => !selectedIds.includes(item.id));
             saveData();
-            renderData(stockData);
+            // Perbarui data yang difilter dan render ulang
+            filteredData = [...stockData];
+            renderData();
             toggleModal(confirmDeleteSelectedModal, false);
         });
 
@@ -534,7 +631,9 @@
                     if (Array.isArray(importedData)) {
                         stockData = importedData;
                         saveData();
-                        renderData(stockData);
+                        // Perbarui data yang difilter dan render ulang
+                        filteredData = [...stockData];
+                        renderData();
                         console.log("Data berhasil diimpor!");
                         setTimeout(() => window.location.reload(), 500); // Segarkan halaman untuk memastikan data baru dimuat
                     } else {
@@ -596,7 +695,7 @@
             if (item) {
                 item.stock += quantity;
                 saveData();
-                renderData(stockData); // Render ulang data setelah penambahan
+                renderData(); // Render ulang data setelah penambahan
                 hideStockModal(); // Tutup modal setelah data disimpan
             } else {
                 console.error("Produk tidak ditemukan.");
@@ -604,16 +703,64 @@
         });
 
         // ==========================================
-        // LOGIKA PENCARIAN
+        // LOGIKA STOK KELUAR BARU
+        // ==========================================
+        showOutStockModalButton.addEventListener('click', showOutStockModal);
+        closeOutStockModalButton.addEventListener('click', hideOutStockModal);
+        outStockModal.addEventListener('click', (event) => {
+            if (event.target === outStockModal) {
+                hideOutStockModal();
+            }
+        });
+        
+        outStockForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            
+            const productId = outStockProductSelect.value;
+            const quantity = parseInt(outStockQuantityInput.value, 10);
+            
+            const item = stockData.find(p => p.id === productId);
+            if (item) {
+                if (item.stock >= quantity) {
+                    item.stock -= quantity;
+                    saveData();
+                    renderData();
+                    hideOutStockModal();
+                } else {
+                    console.error("Jumlah stok yang dikurangi melebihi stok yang tersedia.");
+                }
+            } else {
+                console.error("Produk tidak ditemukan.");
+            }
+        });
+
+        // ==========================================
+        // LOGIKA PENCARIAN & PAGINASI
         // ==========================================
         searchInput.addEventListener('input', (event) => {
             const searchTerm = event.target.value.toLowerCase();
-            const filteredData = stockData.filter(item => {
+            filteredData = stockData.filter(item => {
                 const name = (item.name || '').toLowerCase();
                 const code = (item.code || '').toLowerCase();
                 return name.includes(searchTerm) || code.includes(searchTerm);
             });
-            renderData(filteredData);
+            currentPage = 1; // Atur ulang ke halaman 1 saat pencarian
+            renderData();
+        });
+
+        prevPageBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderData();
+            }
+        });
+
+        nextPageBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderData();
+            }
         });
 
         // Memuat data saat aplikasi pertama kali dijalankan
