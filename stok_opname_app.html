@@ -39,7 +39,7 @@
             transform: translateY(-50px);
         }
 
-        /* Perbaikan Dropdown */
+        /* Dropdown CSS: Defaultnya tersembunyi, hanya muncul saat class 'active' ditambahkan */
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -47,9 +47,7 @@
             left: 0;
             z-index: 10;
         }
-        /* Tambahkan hover pada .dropdown-container dan .dropdown-menu agar menu tetap terlihat saat mengarahkan kursor ke menu itu sendiri */
-        .dropdown-container:hover .dropdown-menu,
-        .dropdown-menu:hover {
+        .dropdown-menu-active {
             display: block;
         }
     </style>
@@ -259,7 +257,7 @@
 
                 <!-- Dropdown untuk Aksi Stok -->
                 <div class="relative dropdown-container">
-                    <button class="bg-indigo-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-600 btn-animation w-full md:w-auto">
+                    <button class="bg-indigo-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-indigo-600 btn-animation w-full md:w-auto dropdown-btn">
                         Aksi Stok
                     </button>
                     <div class="dropdown-menu absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl">
@@ -271,7 +269,7 @@
 
                 <!-- Dropdown untuk Opsi Data -->
                 <div class="relative dropdown-container">
-                    <button class="bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 btn-animation w-full md:w-auto">
+                    <button class="bg-gray-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-gray-600 btn-animation w-full md:w-auto dropdown-btn">
                         Opsi Data
                     </button>
                     <div class="dropdown-menu absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl">
@@ -284,7 +282,7 @@
 
                 <!-- Dropdown untuk Ekspor -->
                 <div class="relative dropdown-container">
-                    <button class="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 btn-animation w-full md:w-auto">
+                    <button class="bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 btn-animation w-full md:w-auto dropdown-btn">
                         Ekspor Produk
                     </button>
                     <div class="dropdown-menu absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl">
@@ -1158,6 +1156,48 @@
         cancelDeleteAllBtn.addEventListener('click', () => {
             toggleModal(confirmDeleteAllModal, false);
         });
+        
+        // ==========================================
+        // LOGIKA DROPDOWN CLICK
+        // ==========================================
+
+        const dropdownButtons = document.querySelectorAll('.dropdown-btn');
+        const dropdownContainers = document.querySelectorAll('.dropdown-container');
+
+        // Menutup semua dropdown yang terbuka
+        function closeAllDropdowns() {
+            dropdownContainers.forEach(container => {
+                const menu = container.querySelector('.dropdown-menu');
+                menu.classList.remove('dropdown-menu-active');
+            });
+        }
+
+        // Event listener untuk setiap tombol dropdown
+        dropdownButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // Mencegah event dari mencapai body
+                
+                // Tutup semua dropdown lain
+                dropdownContainers.forEach(container => {
+                    const menu = container.querySelector('.dropdown-menu');
+                    // Kecuali menu yang baru saja diklik
+                    if (container.contains(e.target)) {
+                        menu.classList.toggle('dropdown-menu-active');
+                    } else {
+                        menu.classList.remove('dropdown-menu-active');
+                    }
+                });
+            });
+        });
+
+        // Event listener untuk menutup dropdown saat mengklik di mana saja di luar area dropdown
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-container')) {
+                closeAllDropdowns();
+            }
+        });
+
 
         // Memuat data awal saat halaman dimuat
         document.addEventListener('DOMContentLoaded', loadData);
