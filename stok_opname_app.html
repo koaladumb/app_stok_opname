@@ -158,6 +158,25 @@
         </div>
     </div>
 
+    <!-- Modal untuk menampilkan data ekspor -->
+    <div id="export-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-40">
+        <div class="modal-content bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-700">Salin Data Ekspor</h2>
+                <button id="close-export-modal" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <p class="text-gray-600 mb-4">Salin data di bawah ini untuk disimpan atau diimpor ke perangkat lain.</p>
+            <textarea id="export-data-textarea" rows="10" readonly
+                class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none"></textarea>
+            <div class="mt-4">
+                <button id="copy-to-clipboard-button"
+                        class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 btn-animation">
+                    📋 Salin ke Clipboard
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // Menginisialisasi referensi DOM
         const form = document.getElementById('stock-form');
@@ -184,6 +203,12 @@
         const importDataTextarea = document.getElementById('import-data');
         const importButton = document.getElementById('import-button');
         const cancelImportButton = document.getElementById('cancel-import-button');
+        
+        // Referensi baru untuk modal ekspor
+        const exportModal = document.getElementById('export-modal');
+        const exportDataTextarea = document.getElementById('export-data-textarea');
+        const copyToClipboardButton = document.getElementById('copy-to-clipboard-button');
+        const closeExportModalButton = document.getElementById('close-export-modal');
 
         const STORAGE_KEY = 'stok-opname-data';
         let stockData = [];
@@ -375,7 +400,21 @@
                 console.error("Tidak ada data untuk diekspor.");
                 return;
             }
-            copyToClipboard(dataToExport);
+            // Menampilkan modal ekspor dan mengisi textarea dengan data
+            exportDataTextarea.value = dataToExport;
+            toggleModal(exportModal, true);
+        });
+
+        // Listener untuk tombol Salin di modal ekspor
+        copyToClipboardButton.addEventListener('click', () => {
+            const data = exportDataTextarea.value;
+            copyToClipboard(data);
+            toggleModal(exportModal, false);
+        });
+
+        // Listener untuk tombol Tutup modal ekspor
+        closeExportModalButton.addEventListener('click', () => {
+            toggleModal(exportModal, false);
         });
 
         // Listener untuk menampilkan bagian Impor
