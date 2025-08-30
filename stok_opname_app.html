@@ -177,23 +177,9 @@
                     </table>
                 </div>
             </div>
-
-            <!-- Bagian Impor yang Tersembunyi -->
-            <div id="import-section" class="mt-8 hidden">
-                <h3 class="text-xl font-semibold mb-2 text-gray-700">Tempelkan Data Impor</h3>
-                <textarea id="import-data" rows="5" placeholder="Tempelkan data JSON di sini..."
-                    class="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"></textarea>
-                <div class="mt-4 flex gap-4">
-                    <button id="import-button"
-                            class="w-full bg-green-500 text-white font-semibold py-3 rounded-lg hover:bg-green-600 btn-animation">
-                        ✅ Konfirmasi Impor
-                    </button>
-                    <button id="cancel-import-button"
-                            class="w-full bg-gray-400 text-white font-semibold py-3 rounded-lg hover:bg-gray-500 btn-animation">
-                        ❌ Batal
-                    </button>
-                </div>
-            </div>
+            
+            <!-- Elemen input file tersembunyi untuk impor data -->
+            <input type="file" id="import-file-input" accept=".json" class="hidden">
 
         </div>
     </div>
@@ -217,13 +203,12 @@
         const showAddModalButton = document.getElementById('show-add-modal-button');
         const closeItemModalButton = document.getElementById('close-item-modal');
 
-        // Referensi untuk fitur Impor/Ekspor
+        // Referensi untuk fitur Ekspor
         const exportButton = document.getElementById('export-button');
+
+        // Referensi untuk fitur Impor baru
         const showImportButton = document.getElementById('show-import-button');
-        const importSection = document.getElementById('import-section');
-        const importDataTextarea = document.getElementById('import-data');
-        const importButton = document.getElementById('import-button');
-        const cancelImportButton = document.getElementById('cancel-import-button');
+        const importFileInput = document.getElementById('import-file-input');
 
         // Referensi untuk fitur Tambah Stok baru
         const showAddStockModalButton = document.getElementById('show-add-stock-modal-button');
@@ -459,40 +444,36 @@
             URL.revokeObjectURL(url);
         });
 
-        // Listener untuk menampilkan bagian Impor
+        // Listener untuk tombol "Impor Data", yang sekarang mengklik input file tersembunyi
         showImportButton.addEventListener('click', () => {
-            importSection.classList.remove('hidden');
+            importFileInput.click();
         });
 
-        // Listener untuk tombol Impor
-        importButton.addEventListener('click', () => {
-            const importedDataString = importDataTextarea.value.trim();
-            if (!importedDataString) {
-                console.error("Tempelkan data di kotak teks terlebih dahulu.");
+        // Listener untuk input file, membaca dan memproses file yang dipilih
+        importFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) {
                 return;
             }
 
-            try {
-                const importedData = JSON.parse(importedDataString);
-                if (Array.isArray(importedData)) {
-                    stockData = importedData;
-                    saveData();
-                    renderData();
-                    setTimeout(() => window.location.reload(), 500);
-                } else {
-                    console.error("Data yang ditempelkan tidak valid.");
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        stockData = importedData;
+                        saveData();
+                        renderData();
+                        console.log("Data berhasil diimpor!");
+                        setTimeout(() => window.location.reload(), 500); // Segarkan halaman untuk memastikan data baru dimuat
+                    } else {
+                        console.error("Data yang diimpor tidak valid. Pastikan itu adalah array JSON.");
+                    }
+                } catch (error) {
+                    console.error("Terjadi kesalahan saat memproses file JSON. Pastikan format file sudah benar.", error);
                 }
-            } catch (e) {
-                console.error("Terjadi kesalahan saat mengimpor data. Pastikan format JSON sudah benar.", e);
-            }
-            importSection.classList.add('hidden');
-            importDataTextarea.value = '';
-        });
-
-        // Listener untuk tombol Batal Impor
-        cancelImportButton.addEventListener('click', () => {
-            importSection.classList.add('hidden');
-            importDataTextarea.value = '';
+            };
+            reader.readAsText(file);
         });
 
         // ==========================================
