@@ -610,7 +610,14 @@
 
             itemsToRender.forEach(item => {
                 const row = document.createElement('tr');
-                row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
+                
+                // Cek jika stok saat ini di bawah stok minimum
+                if (item.minStock !== null && item.stock < item.minStock) {
+                    row.classList.add('bg-yellow-200', 'text-yellow-800', 'hover:!bg-yellow-300');
+                } else {
+                    row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
+                }
+
                 const photoHtml = item.photo ? `<img src="${item.photo}" alt="Foto Produk" class="max-w-[100px] max-h-[100px] object-contain mx-auto rounded">` : `-`;
                 
                 row.innerHTML = `
