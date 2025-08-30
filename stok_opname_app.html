@@ -41,7 +41,7 @@
     <div id="message-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
             <p id="modal-text" class="text-gray-800 text-lg mb-4"></p>
-            <button onclick="closeModal()" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-indigo-700 btn-animation">
+            <button onclick="hideMessageModal()" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-indigo-700 btn-animation">
                 Tutup
             </button>
         </div>
@@ -181,10 +181,10 @@
         const stockList = document.getElementById('stock-list');
         const modalTitle = document.getElementById('modal-title');
         const formButton = document.getElementById('form-button');
-        const messageModal = document.getElementById('message-modal');
-        const modalText = document.getElementById('modal-text');
         
         // Referensi baru untuk fitur pop-up
+        const messageModal = document.getElementById('message-modal');
+        const modalText = document.getElementById('modal-text');
         const itemModal = document.getElementById('item-modal');
         const showAddModalButton = document.getElementById('show-add-modal-button');
         const closeItemModalButton = document.getElementById('close-item-modal');
@@ -200,29 +200,36 @@
         const STORAGE_KEY = 'stok-opname-data';
         let stockData = [];
 
+        // Fungsi terpusat untuk menampilkan atau menyembunyikan modal
+        function toggleModal(modal, show) {
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
         // Fungsi untuk menampilkan modal pesan
-        function showModal(message) {
+        function showMessageModal(message) {
             modalText.textContent = message;
-            messageModal.classList.remove('hidden');
-            messageModal.classList.add('flex');
+            toggleModal(messageModal, true);
         }
 
         // Fungsi untuk menutup modal pesan
-        function closeModal() {
-            messageModal.classList.add('hidden');
-            messageModal.classList.remove('flex');
+        function hideMessageModal() {
+            toggleModal(messageModal, false);
         }
 
         // Fungsi untuk menampilkan modal form produk
         function showItemModal() {
-            itemModal.classList.remove('hidden');
-            itemModal.classList.add('flex');
+            toggleModal(itemModal, true);
         }
 
         // Fungsi untuk menyembunyikan modal form produk
         function hideItemModal() {
-            itemModal.classList.add('hidden');
-            itemModal.classList.remove('flex');
+            toggleModal(itemModal, false);
             form.reset(); // Reset form saat modal ditutup
             itemIdInput.value = ''; // Reset ID
             modalTitle.textContent = 'Tambah Produk'; // Kembalikan judul
@@ -305,7 +312,7 @@
             const minStock = parseInt(itemMinStockInput.value, 10);
 
             if (!name) {
-                showModal("Nama produk tidak valid. Harap periksa input Anda.");
+                showMessageModal("Nama produk tidak valid. Harap periksa input Anda.");
                 return;
             }
 
@@ -320,7 +327,7 @@
                     stockData[index].code = code;
                     stockData[index].photo = photoData;
                     stockData[index].minStock = minStock;
-                    showModal(`Produk '${name}' berhasil diupdate.`);
+                    showMessageModal(`Produk '${name}' berhasil diupdate.`);
                 }
             } else {
                 // Mode Tambah
@@ -332,7 +339,7 @@
                     minStock: minStock
                 };
                 stockData.push(newItem);
-                showModal(`Produk '${name}' berhasil ditambahkan.`);
+                showMessageModal(`Produk '${name}' berhasil ditambahkan.`);
             }
             saveData();
             renderData();
@@ -363,7 +370,7 @@
             stockData = stockData.filter(item => item.id !== id);
             saveData();
             renderData();
-            showModal("Produk berhasil dihapus.");
+            showMessageModal("Produk berhasil dihapus.");
         };
 
         // ==========================================
@@ -374,7 +381,7 @@
         async function copyToClipboard(text) {
             try {
                 await navigator.clipboard.writeText(text);
-                showModal("Data berhasil disalin ke clipboard!");
+                showMessageModal("Data berhasil disalin ke clipboard!");
             } catch (err) {
                 // Fallback jika API Clipboard tidak tersedia
                 const textArea = document.createElement('textarea');
@@ -383,7 +390,7 @@
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                showModal("Data berhasil disalin ke clipboard!");
+                showMessageModal("Data berhasil disalin ke clipboard!");
             }
         }
 
@@ -391,7 +398,7 @@
         exportButton.addEventListener('click', () => {
             const dataToExport = localStorage.getItem(STORAGE_KEY);
             if (!dataToExport || dataToExport === '[]') {
-                showModal("Tidak ada data untuk diekspor. Tambahkan produk terlebih dahulu.");
+                showMessageModal("Tidak ada data untuk diekspor. Tambahkan produk terlebih dahulu.");
                 return;
             }
             copyToClipboard(dataToExport);
@@ -406,7 +413,7 @@
         importButton.addEventListener('click', () => {
             const importedDataString = importDataTextarea.value.trim();
             if (!importedDataString) {
-                showModal("Tempelkan data di kotak teks terlebih dahulu.");
+                showMessageModal("Tempelkan data di kotak teks terlebih dahulu.");
                 return;
             }
 
@@ -416,13 +423,13 @@
                     stockData = importedData;
                     saveData();
                     renderData();
-                    showModal("Data berhasil diimpor! Halaman akan di-refresh untuk menerapkan perubahan.");
+                    showMessageModal("Data berhasil diimpor! Halaman akan di-refresh untuk menerapkan perubahan.");
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
-                    showModal("Data yang ditempelkan tidak valid. Pastikan itu adalah format JSON yang benar.");
+                    showMessageModal("Data yang ditempelkan tidak valid. Pastikan itu adalah format JSON yang benar.");
                 }
             } catch (e) {
-                showModal("Terjadi kesalahan saat mengimpor data. Pastikan format JSON sudah benar.");
+                showMessageModal("Terjadi kesalahan saat mengimpor data. Pastikan format JSON sudah benar.");
                 console.error("Error parsing imported data:", e);
             }
             importSection.classList.add('hidden');
