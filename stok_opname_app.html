@@ -95,6 +95,41 @@
         </div>
     </div>
 
+    <!-- Modal Form Tambah Stok -->
+    <div id="stock-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-40">
+        <div class="modal-content bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-700">Tambah Stok</h2>
+                <button id="close-stock-modal" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <form id="add-stock-form">
+                <div class="space-y-4">
+                    <!-- Dropdown Produk -->
+                    <div class="flex flex-col">
+                        <label for="stock-product" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
+                        <select id="stock-product" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="">-- Pilih Produk --</option>
+                        </select>
+                    </div>
+                    <!-- Input Tanggal -->
+                    <div class="flex flex-col">
+                        <label for="stock-date" class="text-sm font-medium text-gray-700 mb-1">Tanggal</label>
+                        <input type="date" id="stock-date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <!-- Input Jumlah Stok -->
+                    <div class="flex flex-col">
+                        <label for="stock-quantity" class="text-sm font-medium text-gray-700 mb-1">Jumlah Stok</label>
+                        <input type="number" id="stock-quantity" placeholder="Masukkan jumlah stok" required min="1"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 btn-animation">
+                        Simpan Stok
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Halaman utama aplikasi -->
     <div class="container mx-auto p-4 md:p-8 min-h-screen flex flex-col items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-4xl">
@@ -106,6 +141,10 @@
                     ➕ Tambah Produk
                 </button>
                 <div class="flex flex-col md:flex-row gap-4">
+                    <button id="show-add-stock-modal-button"
+                            class="w-full md:w-auto bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-600 btn-animation">
+                        📦 Tambah Stok
+                    </button>
                     <button id="export-button"
                             class="w-full md:w-auto bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-purple-700 btn-animation">
                         💾 Ekspor Data
@@ -128,6 +167,7 @@
                                 <th class="py-3 px-6 text-left">Kode Produk</th>
                                 <th class="py-3 px-6 text-left">Foto Produk</th>
                                 <th class="py-3 px-6 text-left">Stok Minimum</th>
+                                <th class="py-3 px-6 text-left">Stok Saat Ini</th>
                                 <th class="py-3 px-6 text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -157,41 +197,22 @@
 
         </div>
     </div>
-
-    <!-- Modal untuk menampilkan data ekspor -->
-    <div id="export-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-40">
-        <div class="modal-content bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-xl">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-semibold text-gray-700">Salin Data Ekspor</h2>
-                <button id="close-export-modal" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
-            </div>
-            <p class="text-gray-600 mb-4">Salin data di bawah ini untuk disimpan atau diimpor ke perangkat lain.</p>
-            <textarea id="export-data-textarea" rows="10" readonly
-                class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none"></textarea>
-            <div class="mt-4">
-                <button id="copy-to-clipboard-button"
-                        class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 btn-animation">
-                    📋 Salin ke Clipboard
-                </button>
-            </div>
-        </div>
-    </div>
-
+    
     <script type="module">
         // Menginisialisasi referensi DOM
         const form = document.getElementById('stock-form');
         const itemNameInput = document.getElementById('item-name');
-        const itemCodeInput = document.getElementById('item-code'); // Tambahan: Kode Produk
-        const itemPhotoFileInput = document.getElementById('item-photo-file'); // File input untuk foto
-        const itemPhotoDataInput = document.getElementById('item-photo-data'); // Input tersembunyi untuk data foto
-        const itemPhotoPreview = document.getElementById('item-photo-preview'); // Pratinjau foto
+        const itemCodeInput = document.getElementById('item-code');
+        const itemPhotoFileInput = document.getElementById('item-photo-file');
+        const itemPhotoDataInput = document.getElementById('item-photo-data');
+        const itemPhotoPreview = document.getElementById('item-photo-preview');
         const itemMinStockInput = document.getElementById('item-min-stock');
         const itemIdInput = document.getElementById('item-id');
         const stockList = document.getElementById('stock-list');
         const modalTitle = document.getElementById('modal-title');
         const formButton = document.getElementById('form-button');
         
-        // Referensi baru untuk fitur pop-up
+        // Referensi untuk fitur pop-up
         const itemModal = document.getElementById('item-modal');
         const showAddModalButton = document.getElementById('show-add-modal-button');
         const closeItemModalButton = document.getElementById('close-item-modal');
@@ -203,13 +224,16 @@
         const importDataTextarea = document.getElementById('import-data');
         const importButton = document.getElementById('import-button');
         const cancelImportButton = document.getElementById('cancel-import-button');
-        
-        // Referensi baru untuk modal ekspor
-        const exportModal = document.getElementById('export-modal');
-        const exportDataTextarea = document.getElementById('export-data-textarea');
-        const copyToClipboardButton = document.getElementById('copy-to-clipboard-button');
-        const closeExportModalButton = document.getElementById('close-export-modal');
 
+        // Referensi untuk fitur Tambah Stok baru
+        const showAddStockModalButton = document.getElementById('show-add-stock-modal-button');
+        const stockModal = document.getElementById('stock-modal');
+        const closeStockModalButton = document.getElementById('close-stock-modal');
+        const addStockForm = document.getElementById('add-stock-form');
+        const stockProductSelect = document.getElementById('stock-product');
+        const stockDateInput = document.getElementById('stock-date');
+        const stockQuantityInput = document.getElementById('stock-quantity');
+        
         const STORAGE_KEY = 'stok-opname-data';
         let stockData = [];
 
@@ -240,11 +264,43 @@
             itemPhotoDataInput.value = ''; // Hapus data URI dari input tersembunyi
         }
 
+        // Fungsi untuk menampilkan modal tambah stok
+        function showStockModal() {
+            // Isi dropdown produk sebelum menampilkan modal
+            populateProductDropdown();
+            // Atur tanggal hari ini secara default
+            stockDateInput.valueAsDate = new Date();
+            toggleModal(stockModal, true);
+        }
+        
+        // Fungsi untuk menyembunyikan modal tambah stok
+        function hideStockModal() {
+            toggleModal(stockModal, false);
+            addStockForm.reset(); // Reset form
+        }
+
+        // Mengisi dropdown produk di modal tambah stok
+        function populateProductDropdown() {
+            stockProductSelect.innerHTML = '<option value="">-- Pilih Produk --</option>';
+            stockData.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                option.textContent = `${item.name}${item.code ? ' - ' + item.code : ''}`;
+                stockProductSelect.appendChild(option);
+            });
+        }
+
         // Memuat data dari localStorage saat aplikasi dimulai
         function loadData() {
             const data = localStorage.getItem(STORAGE_KEY);
             if (data) {
                 stockData = JSON.parse(data);
+                // Menambahkan properti 'stock' jika belum ada
+                stockData.forEach(item => {
+                    if (!item.stock) {
+                        item.stock = 0;
+                    }
+                });
             }
             renderData();
         }
@@ -258,8 +314,8 @@
         function renderData() {
             stockList.innerHTML = '';
             if (stockData.length === 0) {
-                // Kolom berubah menjadi 5: Nama, Kode, Foto, Stok Minimum, Aksi
-                stockList.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-gray-500">Tidak ada produk yang tersimpan.</td></tr>`;
+                // Kolom berubah menjadi 6: Nama, Kode, Foto, Stok Minimum, Stok Saat Ini, Aksi
+                stockList.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-gray-500">Tidak ada produk yang tersimpan.</td></tr>`;
                 return;
             }
             stockData.forEach(item => {
@@ -272,6 +328,7 @@
                     <td class="py-3 px-6">${item.code || '-'}</td>
                     <td class="py-3 px-6 text-center">${photoHtml}</td>
                     <td class="py-3 px-6">${item.minStock || '-'}</td>
+                    <td class="py-3 px-6 font-semibold">${item.stock || '0'}</td>
                     <td class="py-3 px-6 text-center">
                         <div class="flex item-center justify-center space-x-2">
                             <button onclick="window.editItem('${item.id}', '${item.name}', '${item.code || ''}', '${item.photo || ''}', ${item.minStock || '0'})"
@@ -312,7 +369,7 @@
             const code = itemCodeInput.value.trim();
             const photoData = itemPhotoDataInput.value;
             const minStock = parseInt(itemMinStockInput.value, 10);
-
+            
             if (!name) {
                 console.error("Nama produk tidak valid.");
                 return;
@@ -337,7 +394,8 @@
                     name: name,
                     code: code,
                     photo: photoData,
-                    minStock: minStock
+                    minStock: minStock,
+                    stock: 0 // Inisialisasi stok menjadi 0
                 };
                 stockData.push(newItem);
             }
@@ -375,46 +433,30 @@
         // ==========================================
         // FITUR EKSPOR DAN IMPOR DATA
         // ==========================================
-
-        // Fungsi untuk menyalin teks ke clipboard
-        async function copyToClipboard(text) {
-            try {
-                await navigator.clipboard.writeText(text);
-                console.log("Data berhasil disalin ke clipboard!");
-            } catch (err) {
-                // Fallback jika API Clipboard tidak tersedia
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                console.log("Data berhasil disalin ke clipboard!");
-            }
-        }
-
-        // Listener untuk tombol Ekspor
+        
+        // Listener untuk tombol Ekspor, sekarang mengunduh file secara langsung
         exportButton.addEventListener('click', () => {
             const dataToExport = localStorage.getItem(STORAGE_KEY);
             if (!dataToExport || dataToExport === '[]') {
                 console.error("Tidak ada data untuk diekspor.");
                 return;
             }
-            // Menampilkan modal ekspor dan mengisi textarea dengan data
-            exportDataTextarea.value = dataToExport;
-            toggleModal(exportModal, true);
-        });
 
-        // Listener untuk tombol Salin di modal ekspor
-        copyToClipboardButton.addEventListener('click', () => {
-            const data = exportDataTextarea.value;
-            copyToClipboard(data);
-            toggleModal(exportModal, false);
-        });
-
-        // Listener untuk tombol Tutup modal ekspor
-        closeExportModalButton.addEventListener('click', () => {
-            toggleModal(exportModal, false);
+            // Membuat Blob dari data JSON
+            const blob = new Blob([dataToExport], { type: 'application/json' });
+            // Membuat URL objek dari Blob
+            const url = URL.createObjectURL(blob);
+            
+            // Membuat elemen link sementara untuk mengunduh
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'stok_opname.json'; // Nama file yang akan diunduh
+            document.body.appendChild(a);
+            a.click();
+            
+            // Membersihkan URL objek dan elemen link
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         });
 
         // Listener untuk menampilkan bagian Impor
@@ -470,6 +512,42 @@
         itemModal.addEventListener('click', (event) => {
             if (event.target === itemModal) {
                 hideItemModal();
+            }
+        });
+
+        // ==========================================
+        // LOGIKA TAMBAH STOK BARU
+        // ==========================================
+        
+        // Listener untuk tombol "Tambah Stok"
+        showAddStockModalButton.addEventListener('click', showStockModal);
+
+        // Listener untuk tombol menutup modal stok
+        closeStockModalButton.addEventListener('click', hideStockModal);
+
+        // Listener untuk menutup modal stok saat mengklik di luar konten
+        stockModal.addEventListener('click', (event) => {
+            if (event.target === stockModal) {
+                hideStockModal();
+            }
+        });
+
+        // Listener untuk form tambah stok
+        addStockForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            
+            const productId = stockProductSelect.value;
+            const quantity = parseInt(stockQuantityInput.value, 10);
+            
+            // Cari produk berdasarkan ID dan perbarui stoknya
+            const item = stockData.find(p => p.id === productId);
+            if (item) {
+                item.stock += quantity;
+                saveData();
+                renderData();
+                hideStockModal(); // Tutup modal setelah data disimpan
+            } else {
+                console.error("Produk tidak ditemukan.");
             }
         });
 
