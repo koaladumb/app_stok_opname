@@ -115,6 +115,12 @@
             </div>
             <form id="add-stock-form">
                 <div class="space-y-4">
+                    <!-- Input Pencarian -->
+                    <div class="flex flex-col">
+                        <label for="stock-product-search" class="text-sm font-medium text-gray-700 mb-1">Cari Produk</label>
+                        <input type="text" id="stock-product-search" placeholder="Ketik nama atau kode produk..."
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
                     <!-- Dropdown Produk -->
                     <div class="flex flex-col">
                         <label for="stock-product" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
@@ -156,6 +162,12 @@
             </div>
             <form id="out-stock-form">
                 <div class="space-y-4">
+                    <!-- Input Pencarian -->
+                    <div class="flex flex-col">
+                        <label for="out-stock-product-search" class="text-sm font-medium text-gray-700 mb-1">Cari Produk</label>
+                        <input type="text" id="out-stock-product-search" placeholder="Ketik nama atau kode produk..."
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
                     <!-- Dropdown Produk -->
                     <div class="flex flex-col">
                         <label for="out-stock-product" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
@@ -213,6 +225,12 @@
             </div>
             <form id="opname-form">
                 <div class="space-y-4">
+                    <!-- Input Pencarian -->
+                    <div class="flex flex-col">
+                        <label for="opname-product-search" class="text-sm font-medium text-gray-700 mb-1">Cari Produk</label>
+                        <input type="text" id="opname-product-search" placeholder="Ketik nama atau kode produk..."
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
                     <!-- Dropdown Produk -->
                     <div class="flex flex-col">
                         <label for="opname-product" class="text-sm font-medium text-gray-700 mb-1">Pilih Produk</label>
@@ -425,20 +443,22 @@
         const stockModal = document.getElementById('stock-modal');
         const closeStockModalButton = document.getElementById('close-stock-modal');
         const addStockForm = document.getElementById('add-stock-form');
+        const stockProductSearchInput = document.getElementById('stock-product-search');
         const stockProductSelect = document.getElementById('stock-product');
         const stockDateInput = document.getElementById('stock-date');
         const stockQuantityInput = document.getElementById('stock-quantity');
-        const stockNotesInput = document.getElementById('stock-notes'); // NEW
+        const stockNotesInput = document.getElementById('stock-notes');
 
         // Referensi untuk fitur Stok Keluar baru
         const showOutStockModalButton = document.getElementById('show-out-stock-modal-button');
         const outStockModal = document.getElementById('out-stock-modal');
         const closeOutStockModalButton = document.getElementById('close-out-stock-modal');
         const outStockForm = document.getElementById('out-stock-form');
+        const outStockProductSearchInput = document.getElementById('out-stock-product-search');
         const outStockProductSelect = document.getElementById('out-stock-product');
         const outStockDateInput = document.getElementById('out-stock-date');
         const outStockQuantityInput = document.getElementById('out-stock-quantity');
-        const outStockNotesInput = document.getElementById('out-stock-notes'); // NEW
+        const outStockNotesInput = document.getElementById('out-stock-notes');
         
         // Referensi untuk modal konfirmasi hapus massal baru
         const confirmDeleteSelectedModal = document.getElementById('confirm-delete-selected-modal');
@@ -463,9 +483,10 @@
         const opnameModal = document.getElementById('opname-modal');
         const closeOpnameModalButton = document.getElementById('close-opname-modal');
         const opnameForm = document.getElementById('opname-form');
+        const opnameProductSearchInput = document.getElementById('opname-product-search');
         const opnameProductSelect = document.getElementById('opname-product');
         const opnamePhysicalCountInput = document.getElementById('opname-physical-count');
-        const opnameNotesInput = document.getElementById('opname-notes'); // NEW
+        const opnameNotesInput = document.getElementById('opname-notes');
 
         // REFERENSI BARU: HAPUS SEMUA DATA
         const deleteAllDataButton = document.getElementById('delete-all-data-button');
@@ -513,12 +534,12 @@
 
         // Fungsi untuk menampilkan modal tambah stok
         function showStockModal() {
-            // Isi dropdown produk sebelum menampilkan modal
-            populateProductDropdown(stockProductSelect);
-            // Atur tanggal hari ini secara default
+            populateProductDropdown(stockProductSelect, '');
             stockDateInput.valueAsDate = new Date();
-            stockNotesInput.value = ''; // Reset catatan
+            stockNotesInput.value = '';
             toggleModal(stockModal, true);
+            stockProductSearchInput.value = ''; // Kosongkan input pencarian
+            stockProductSearchInput.focus(); // Fokuskan ke input pencarian
         }
         
         // Fungsi untuk menyembunyikan modal tambah stok
@@ -529,12 +550,12 @@
 
         // Fungsi untuk menampilkan modal stok keluar
         function showOutStockModal() {
-             // Isi dropdown produk sebelum menampilkan modal
-            populateProductDropdown(outStockProductSelect);
-            // Atur tanggal hari ini secara default
+            populateProductDropdown(outStockProductSelect, '');
             outStockDateInput.valueAsDate = new Date();
-            outStockNotesInput.value = ''; // Reset catatan
+            outStockNotesInput.value = '';
             toggleModal(outStockModal, true);
+            outStockProductSearchInput.value = '';
+            outStockProductSearchInput.focus();
         }
         
         // Fungsi untuk menyembunyikan modal stok keluar
@@ -545,10 +566,12 @@
 
         // FUNGSI BARU: MENAMPILKAN MODAL OPNAME
         function showOpnameModal() {
-            populateProductDropdown(opnameProductSelect);
+            populateProductDropdown(opnameProductSelect, '');
             opnamePhysicalCountInput.value = '';
-            opnameNotesInput.value = ''; // Reset catatan
+            opnameNotesInput.value = '';
             toggleModal(opnameModal, true);
+            opnameProductSearchInput.value = '';
+            opnameProductSearchInput.focus();
         }
         
         // FUNGSI BARU: MENYEMBUNYIKAN MODAL OPNAME
@@ -557,14 +580,33 @@
             opnameForm.reset();
         }
 
-        // Mengisi dropdown produk di modal
-        function populateProductDropdown(selectElement) {
+        // Mengisi dropdown produk di modal dengan filter
+        function populateProductDropdown(selectElement, searchQuery = '') {
             selectElement.innerHTML = '<option value="">-- Pilih Produk --</option>';
-            stockData.forEach(item => {
+            
+            const filteredProducts = stockData.filter(item => 
+                item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                (item.code && item.code.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
+
+            filteredProducts.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item.id;
                 option.textContent = `${item.name}${item.code ? ' - ' + item.code : ''}`;
                 selectElement.appendChild(option);
+            });
+        }
+        
+        // Menyiapkan event listener untuk pencarian di dropdown
+        function setupSearchableDropdowns() {
+            stockProductSearchInput.addEventListener('input', () => {
+                populateProductDropdown(stockProductSelect, stockProductSearchInput.value);
+            });
+            outStockProductSearchInput.addEventListener('input', () => {
+                populateProductDropdown(outStockProductSelect, outStockProductSearchInput.value);
+            });
+            opnameProductSearchInput.addEventListener('input', () => {
+                populateProductDropdown(opnameProductSelect, opnameProductSearchInput.value);
             });
         }
 
@@ -593,6 +635,7 @@
             filteredData = [...stockData]; // Inisialisasi data yang difilter
             renderData(); // Render data awal
             renderHistory(); // Render riwayat
+            setupSearchableDropdowns(); // Setup event listener untuk pencarian
         }
 
         // Menyimpan data ke localStorage
