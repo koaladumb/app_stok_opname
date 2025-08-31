@@ -305,6 +305,19 @@
         </div>
     </div>
 
+    <!-- MODAL BARU: NOTIFIKASI -->
+    <div id="notification-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 hidden items-center justify-center z-50">
+        <div class="modal-content bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-sm">
+            <h3 id="notification-title" class="text-xl font-bold text-gray-700 mb-4"></h3>
+            <p id="notification-message" class="text-gray-600 mb-6"></p>
+            <div class="flex justify-end">
+                <button id="close-notification-btn" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 btn-animation">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Halaman utama aplikasi -->
     <div class="container mx-auto p-4 md:p-8 min-h-screen flex flex-col items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-4xl">
@@ -455,6 +468,17 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- Kontrol Paginasi Riwayat -->
+            <div id="history-pagination-controls" class="flex justify-center items-center space-x-4 mt-6">
+                <button id="prev-history-btn" class="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 btn-animation disabled:opacity-50 disabled:cursor-not-allowed">
+                    Sebelumnya
+                </button>
+                <span id="history-page-info" class="text-gray-700 font-medium">Halaman 1 dari 1</span>
+                <button id="next-history-btn" class="bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 btn-animation disabled:opacity-50 disabled:cursor-not-allowed">
+                    Berikutnya
+                </button>
+            </div>
         </div>
     </div>
     
@@ -499,7 +523,7 @@
         const stockQuantityInput = document.getElementById('stock-quantity');
         const stockNotesInput = document.getElementById('stock-notes');
 
-        // Referensi untuk fitur Stok Keluar baru
+        // Referensi untuk fitur Stok Keluar
         const showOutStockModalButton = document.getElementById('show-out-stock-modal-button');
         const outStockModal = document.getElementById('out-stock-modal');
         const closeOutStockModalButton = document.getElementById('close-out-stock-modal');
@@ -511,7 +535,7 @@
         const outStockQuantityInput = document.getElementById('out-stock-quantity');
         const outStockNotesInput = document.getElementById('out-stock-notes');
         
-        // Referensi untuk modal konfirmasi hapus massal baru
+        // Referensi untuk modal konfirmasi hapus massal
         const confirmDeleteSelectedModal = document.getElementById('confirm-delete-selected-modal');
         const confirmDeleteSelectedBtn = document.getElementById('confirm-delete-selected-btn');
         const cancelDeleteSelectedBtn = document.getElementById('cancel-delete-selected-btn');
@@ -540,19 +564,30 @@
         const opnamePhysicalCountInput = document.getElementById('opname-physical-count');
         const opnameNotesInput = document.getElementById('opname-notes');
 
-        // REFERENSI BARU: HAPUS SEMUA DATA
+        // REFERENSI: HAPUS SEMUA DATA
         const deleteAllDataButton = document.getElementById('delete-all-data-button');
         const confirmDeleteAllModal = document.getElementById('confirm-delete-all-modal');
         const confirmDeleteAllBtn = document.getElementById('confirm-delete-all-btn');
         const cancelDeleteAllBtn = document.getElementById('cancel-delete-all-btn');
 
-        // REFERENSI BARU: JUMLAH PRODUK
+        // REFERENSI: JUMLAH PRODUK
         const productCountSpan = document.getElementById('product-count');
 
-        // REFERENSI BARU: FILTER RIWAYAT
+        // REFERENSI: FILTER RIWAYAT
         const historySearchInput = document.getElementById('history-search-input');
         const historyStartDateInput = document.getElementById('history-start-date');
         const historyEndDateInput = document.getElementById('history-end-date');
+
+        // Referensi paginasi riwayat
+        const prevHistoryBtn = document.getElementById('prev-history-btn');
+        const nextHistoryBtn = document.getElementById('next-history-btn');
+        const historyPageInfoSpan = document.getElementById('history-page-info');
+
+        // REFERENSI BARU: MODAL NOTIFIKASI
+        const notificationModal = document.getElementById('notification-modal');
+        const notificationTitle = document.getElementById('notification-title');
+        const notificationMessage = document.getElementById('notification-message');
+        const closeNotificationBtn = document.getElementById('close-notification-btn');
 
 
         const STORAGE_KEY = 'stok-opname-data';
@@ -560,7 +595,9 @@
         let stockData = [];
         let historyData = []; // Array baru untuk menyimpan riwayat
         let currentPage = 1;
+        let currentHistoryPage = 1; // Halaman riwayat saat ini
         const itemsPerPage = 10;
+        const historyItemsPerPage = 10; // Item riwayat per halaman
         let filteredData = [];
         let filteredHistory = [];
         const LOW_STOCK_THRESHOLD = 20; // Batas stok minimum yang otomatis
@@ -574,6 +611,18 @@
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
             }
+        }
+        
+        // FUNGSI BARU: MENAMPILKAN MODAL NOTIFIKASI
+        function showNotificationModal(title, message) {
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            toggleModal(notificationModal, true);
+        }
+        
+        // FUNGSI BARU: MENYEMBUNYIKAN MODAL NOTIFIKASI
+        function hideNotificationModal() {
+            toggleModal(notificationModal, false);
         }
 
         // Fungsi untuk menampilkan modal form produk
@@ -621,7 +670,7 @@
             outStockForm.reset(); // Reset form
         }
 
-        // FUNGSI BARU: MENAMPILKAN MODAL OPNAME
+        // FUNGSI: MENAMPILKAN MODAL OPNAME
         function showOpnameModal() {
             toggleModal(opnameModal, true);
             opnameProductSearchInput.value = '';
@@ -629,13 +678,13 @@
             renderSearchableDropdown(opnameProductSearchInput, opnameProductDropdownMenu);
         }
         
-        // FUNGSI BARU: MENYEMBUNYIKAN MODAL OPNAME
+        // FUNGSI: MENYEMBUNYIKAN MODAL OPNAME
         function hideOpnameModal() {
             toggleModal(opnameModal, false);
             opnameForm.reset();
         }
         
-        // FUNGSI BARU: RENDERING SEARCHABLE DROPDOWN
+        // FUNGSI: RENDERING SEARCHABLE DROPDOWN
         function renderSearchableDropdown(inputElement, menuElement) {
             const query = inputElement.value.toLowerCase().trim();
             menuElement.innerHTML = '';
@@ -753,7 +802,7 @@
             localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
         }
 
-        // FUNGSI BARU: MEMPERBARUI JUMLAH PRODUK YANG DITAMPILKAN
+        // FUNGSI: MEMPERBARUI JUMLAH PRODUK YANG DITAMPILKAN
         function updateProductCount() {
             productCountSpan.textContent = `(${stockData.length} Produk)`;
         }
@@ -815,15 +864,25 @@
         // Merender riwayat transaksi
         function renderHistory() {
             historyList.innerHTML = '';
-            if (filteredHistory.length === 0) {
+            
+            // Urutkan riwayat dari yang terbaru
+            filteredHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            const totalHistoryPages = Math.ceil(filteredHistory.length / historyItemsPerPage);
+            const startIndex = (currentHistoryPage - 1) * historyItemsPerPage;
+            const endIndex = startIndex + historyItemsPerPage;
+            const itemsToRender = filteredHistory.slice(startIndex, endIndex);
+
+            historyPageInfoSpan.textContent = `Halaman ${currentHistoryPage} dari ${totalHistoryPages || 1}`;
+            prevHistoryBtn.disabled = currentHistoryPage === 1;
+            nextHistoryBtn.disabled = currentHistoryPage === totalHistoryPages || totalHistoryPages === 0;
+
+            if (itemsToRender.length === 0) {
                 historyList.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-gray-500">Tidak ada riwayat transaksi.</td></tr>`;
                 return;
             }
             
-            // historyData.sort((a, b) => new Date(b.date) - new Date(a.date)); // Urutkan dari yang terbaru
-            filteredHistory.sort((a, b) => new Date(b.date) - new Date(a.date)); // Urutkan yang sudah difilter
-            
-            filteredHistory.forEach(transaction => {
+            itemsToRender.forEach(transaction => {
                 const row = document.createElement('tr');
                 row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
                 
@@ -894,23 +953,22 @@
             const photoData = itemPhotoDataInput.value;
             
             if (!name) {
-                console.error("Nama produk tidak valid.");
+                showNotificationModal('Gagal', 'Nama produk tidak boleh kosong.');
                 return;
             }
 
-            // Tutup modal form produk terlebih dahulu
-            hideItemModal();
-
-            if (id) {
-                // Mode Edit
-                const index = stockData.findIndex(item => item.id === id);
-                if (index > -1) {
-                    stockData[index].name = name;
-                    stockData[index].code = code;
-                    stockData[index].photo = photoData;
-                }
-            } else {
+            if (!id) {
                 // Mode Tambah
+                const isDuplicate = stockData.some(item => 
+                    item.name.toLowerCase() === name.toLowerCase() && 
+                    (item.code || '').toLowerCase() === code.toLowerCase()
+                );
+
+                if (isDuplicate) {
+                    showNotificationModal('Produk Sudah Ada', 'Produk dengan nama dan kode yang sama sudah ada di dalam daftar.');
+                    return;
+                }
+
                 const newItem = {
                     id: crypto.randomUUID(),
                     name: name,
@@ -919,8 +977,20 @@
                     stock: 0 // Inisialisasi stok menjadi 0
                 };
                 stockData.push(newItem);
+            } else {
+                // Mode Edit
+                const index = stockData.findIndex(item => item.id === id);
+                if (index > -1) {
+                    stockData[index].name = name;
+                    stockData[index].code = code;
+                    stockData[index].photo = photoData;
+                }
             }
+            
+            // Tutup modal form produk
+            hideItemModal();
             saveData();
+            
             // Perbarui data yang difilter dan render ulang
             filteredData = [...stockData];
             renderData();
@@ -1035,13 +1105,14 @@
                         filteredData = [...stockData];
                         applyHistoryFilters();
                         renderData();
-                        console.log("Data berhasil di-restore!");
+                        showNotificationModal('Berhasil', 'Data berhasil di-restore!');
                         setTimeout(() => window.location.reload(), 500); // Segarkan halaman untuk memastikan data baru dimuat
                     } else {
-                        console.error("Data yang diimpor tidak valid. Pastikan itu adalah file backup dari aplikasi ini.");
+                        showNotificationModal('Gagal', 'Data yang diimpor tidak valid. Pastikan itu adalah file backup dari aplikasi ini.');
                     }
                 } catch (error) {
-                    console.error("Terjadi kesalahan saat memproses file JSON. Pastikan format file sudah benar.", error);
+                    showNotificationModal('Gagal', 'Terjadi kesalahan saat memproses file JSON. Pastikan format file sudah benar.');
+                    console.error("Terjadi kesalahan saat memproses file JSON:", error);
                 }
             };
             reader.readAsText(file);
@@ -1153,6 +1224,17 @@
                 hideItemModal();
             }
         });
+        
+        // Listener untuk tombol menutup modal notifikasi
+        closeNotificationBtn.addEventListener('click', hideNotificationModal);
+
+        // Listener untuk menutup modal notifikasi saat mengklik di luar
+        notificationModal.addEventListener('click', (event) => {
+            if (event.target === notificationModal) {
+                hideNotificationModal();
+            }
+        });
+
 
         // ==========================================
         // LOGIKA TAMBAH STOK BARU
@@ -1288,7 +1370,7 @@
             renderData();
         });
 
-        // FUNGSI BARU: MENERAPKAN FILTER RIWAYAT
+        // FUNGSI: MENERAPKAN FILTER RIWAYAT
         function applyHistoryFilters() {
             const query = historySearchInput.value.toLowerCase().trim();
             const startDate = historyStartDateInput.value;
@@ -1302,7 +1384,8 @@
                 
                 return startMatch && endMatch && nameMatch;
             });
-
+            
+            currentHistoryPage = 1;
             renderHistory();
         }
 
@@ -1331,7 +1414,24 @@
             }
         });
 
-        // FUNGSI BARU: HAPUS SEMUA DATA
+        // Paginasi Riwayat
+        prevHistoryBtn.addEventListener('click', () => {
+            if (currentHistoryPage > 1) {
+                currentHistoryPage--;
+                renderHistory();
+            }
+        });
+        
+        nextHistoryBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredHistory.length / historyItemsPerPage);
+            if (currentHistoryPage < totalPages) {
+                currentHistoryPage++;
+                renderHistory();
+            }
+        });
+
+
+        // FUNGSI: HAPUS SEMUA DATA
         function clearAllData() {
             localStorage.removeItem(STORAGE_KEY);
             localStorage.removeItem(HISTORY_KEY);
@@ -1341,7 +1441,7 @@
             filteredHistory = []; // Juga reset data riwayat yang difilter
             renderData();
             renderHistory();
-            updateProductCount(); // NEW: Perbarui jumlah produk setelah menghapus
+            updateProductCount(); // Perbarui jumlah produk setelah menghapus
         }
 
         // Event listener untuk tombol Hapus Semua Data
