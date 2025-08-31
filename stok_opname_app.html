@@ -361,13 +361,17 @@
 
             <!-- Bagian Tampilan Daftar Stok -->
             <div class="mb-8">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-700">Daftar Stok</h2>
-                
-                <!-- Tombol Hapus Produk Terpilih -->
-                <button id="delete-selected-button"
-                    class="mb-4 bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 btn-animation hidden">
-                    🗑️ Hapus Produk Terpilih
-                </button>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-700">
+                        Daftar Stok
+                        <span id="product-count" class="text-base font-normal text-gray-500 ml-2"></span>
+                    </h2>
+                    <!-- Tombol Hapus Produk Terpilih -->
+                    <button id="delete-selected-button"
+                        class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 btn-animation hidden">
+                        🗑️ Hapus Produk Terpilih
+                    </button>
+                </div>
 
                 <div class="overflow-x-auto rounded-lg shadow-inner">
                     <table class="w-full text-left whitespace-nowrap bg-gray-50">
@@ -527,6 +531,9 @@
         const confirmDeleteAllModal = document.getElementById('confirm-delete-all-modal');
         const confirmDeleteAllBtn = document.getElementById('confirm-delete-all-btn');
         const cancelDeleteAllBtn = document.getElementById('cancel-delete-all-btn');
+
+        // REFERENSI BARU: JUMLAH PRODUK
+        const productCountSpan = document.getElementById('product-count');
 
 
         const STORAGE_KEY = 'stok-opname-data';
@@ -712,16 +719,23 @@
             renderData(); // Render data awal
             renderHistory(); // Render riwayat
             setupSearchableDropdowns(); // Setup event listener untuk pencarian
+            updateProductCount(); // NEW: Perbarui jumlah produk saat memuat data
         }
 
         // Menyimpan data ke localStorage
         function saveData() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(stockData));
+            updateProductCount(); // NEW: Perbarui jumlah produk setelah menyimpan data
         }
 
         // Menyimpan riwayat ke localStorage
         function saveHistory() {
             localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+        }
+
+        // FUNGSI BARU: MEMPERBARUI JUMLAH PRODUK YANG DITAMPILKAN
+        function updateProductCount() {
+            productCountSpan.textContent = `(${stockData.length} Produk)`;
         }
 
         // Merender data di tabel
@@ -1282,6 +1296,7 @@
             filteredData = [];
             renderData();
             renderHistory();
+            updateProductCount(); // NEW: Perbarui jumlah produk setelah menghapus
         }
 
         // Event listener untuk tombol Hapus Semua Data
