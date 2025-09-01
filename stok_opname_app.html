@@ -838,7 +838,7 @@
                     row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
                 }
 
-                const photoHtml = item.photo ? `<img src="${item.photo}" alt="Foto Produk" class="max-w-[100px] max-h-[100px] object-contain mx-auto rounded">` : `-`;
+                const photoHtml = item.photo ? `<img src="${item.photo}" alt="Pratinjau Foto" class="w-[50px] h-[50px] object-contain mx-auto rounded">` : `-`;
                 
                 row.innerHTML = `
                     <td class="py-3 px-6 text-center">
@@ -1123,27 +1123,83 @@
         // ==========================================
 
         // Listener untuk tombol Ekspor PDF
-        exportPdfButton.addEventListener('click', (e) => {
-            e.preventDefault(); // Mencegah navigasi default link
+        exportPdfButton.addEventListener('click', async (e) => {
+            e.preventDefault();
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
-            const columns = ["Nama Produk", "Kode Produk", "Stok Saat Ini"];
-            const data = filteredData.map(item => [item.name, item.code || '-', item.stock || 0]);
-
+        
+            const columns = ["Nama Produk", "Kode Produk", "Foto Produk", "Stok Saat Ini"];
+            
+            // Mengambil semua data produk, bukan hanya yang dirender di halaman saat ini
+            const allProducts = stockData.map(item => ({
+                name: item.name,
+                code: item.code || '-',
+                photo: item.photo,
+                stock: item.stock || 0
+            }));
+        
+            // Mengumpulkan data untuk tabel, termasuk objek gambar
+            const data = allProducts.map(item => [item.name, item.code, item.photo, item.stock]);
+        
+            // Fungsi untuk mengkonversi data URI menjadi objek gambar dan menambahkannya ke PDF
+            const addImagesToPdf = (doc, data, startY) => {
+                let imagePromises = data.map(row => {
+                    const photoData = row[2]; // Data URI di kolom ketiga
+                    if (photoData) {
+                        return new Promise(resolve => {
+                            const img = new Image();
+                            img.onload = function() {
+                                resolve(this);
+                            };
+                            img.onerror = function() {
+                                console.error("Gagal memuat gambar");
+                                resolve(null);
+                            };
+                            img.src = photoData;
+                        });
+                    }
+                    return Promise.resolve(null);
+                });
+        
+                return Promise.all(imagePromises);
+            };
+        
+            const images = await addImagesToPdf(doc, data);
+            
+            const imageSize = 15; // Ukuran gambar yang diinginkan (px)
+            const tableDataWithImages = data.map((row, index) => {
+                const photo = images[index];
+                if (photo) {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = imageSize;
+                    canvas.height = imageSize;
+                    ctx.drawImage(photo, 0, 0, imageSize, imageSize);
+                    const resizedImage = canvas.toDataURL('image/jpeg');
+                    return [row[0], row[1], { image: resizedImage, width: imageSize, height: imageSize }, row[3]];
+                }
+                return [row[0], row[1], '', row[3]]; // Jika tidak ada gambar, kosongkan
+            });
+        
             doc.autoTable({
                 head: [columns],
-                body: data,
+                body: tableDataWithImages,
                 startY: 20,
-                headStyles: { fillColor: [75, 85, 99] }, // Warna abu-abu gelap
+                headStyles: { fillColor: [75, 85, 99] },
                 theme: 'striped',
                 columnStyles: {
-                    0: { cellWidth: 50 },
-                    1: { cellWidth: 30 },
-                    2: { cellWidth: 30 },
+                    0: { cellWidth: 'auto' }, // Atur lebar kolom menjadi otomatis
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 'auto', halign: 'center' },
+                    3: { cellWidth: 'auto' }
+                },
+                didDrawCell: (data) => {
+                    if (data.column.index === 2 && data.cell.raw && data.cell.raw.image) {
+                        doc.addImage(data.cell.raw.image, 'JPEG', data.cell.x + (data.cell.width - imageSize) / 2, data.cell.y + (data.cell.height - imageSize) / 2, imageSize, imageSize);
+                    }
                 }
             });
-
+        
             doc.save('daftar_stok.pdf');
         });
 
@@ -1177,13 +1233,13 @@
                 headStyles: { fillColor: [75, 85, 99] }, // Warna abu-abu gelap
                 theme: 'striped',
                 columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 35 },
-                    2: { cellWidth: 25 },
-                    3: { cellWidth: 15 },
-                    4: { cellWidth: 15 },
-                    5: { cellWidth: 20 },
-                    6: { cellWidth: 35 }
+                    0: { cellWidth: 'auto' },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 'auto' },
+                    3: { cellWidth: 'auto' },
+                    4: { cellWidth: 'auto' },
+                    5: { cellWidth: 'auto' },
+                    6: { cellWidth: 'auto' }
                 }
             });
 
