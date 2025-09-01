@@ -838,6 +838,7 @@
                     row.classList.add('border-b', 'border-gray-200', 'hover:bg-gray-100');
                 }
 
+                // Mengubah ukuran gambar di tabel agar lebih rapi
                 const photoHtml = item.photo ? `<img src="${item.photo}" alt="Pratinjau Foto" class="w-[50px] h-[50px] object-contain mx-auto rounded">` : `-`;
                 
                 row.innerHTML = `
@@ -1142,7 +1143,7 @@
             const data = allProducts.map(item => [item.name, item.code, item.photo, item.stock]);
         
             // Fungsi untuk mengkonversi data URI menjadi objek gambar dan menambahkannya ke PDF
-            const addImagesToPdf = (doc, data, startY) => {
+            const addImagesToPdf = (doc, data) => {
                 let imagePromises = data.map(row => {
                     const photoData = row[2]; // Data URI di kolom ketiga
                     if (photoData) {
@@ -1166,17 +1167,32 @@
         
             const images = await addImagesToPdf(doc, data);
             
-            const imageSize = 15; // Ukuran gambar yang diinginkan (px)
+            // Ukuran gambar yang diinginkan dalam mm
+            const imageSize = 15; 
             const tableDataWithImages = data.map((row, index) => {
                 const photo = images[index];
                 if (photo) {
+                    // Buat kanvas sementara untuk mengubah ukuran gambar
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = imageSize;
-                    canvas.height = imageSize;
-                    ctx.drawImage(photo, 0, 0, imageSize, imageSize);
-                    const resizedImage = canvas.toDataURL('image/jpeg');
-                    return [row[0], row[1], { image: resizedImage, width: imageSize, height: imageSize }, row[3]];
+                    
+                    // Hitung aspek rasio untuk mempertahankan proporsi
+                    let width = photo.width;
+                    let height = photo.height;
+                    if (width > height) {
+                        height = imageSize * (height / width);
+                        width = imageSize;
+                    } else {
+                        width = imageSize * (width / height);
+                        height = imageSize;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(photo, 0, 0, width, height);
+
+                    const resizedImage = canvas.toDataURL('image/jpeg', 0.8); // 0.8 adalah kualitas
+                    return [row[0], row[1], { image: resizedImage, width: width, height: height }, row[3]];
                 }
                 return [row[0], row[1], '', row[3]]; // Jika tidak ada gambar, kosongkan
             });
@@ -1188,14 +1204,14 @@
                 headStyles: { fillColor: [75, 85, 99] },
                 theme: 'striped',
                 columnStyles: {
-                    0: { cellWidth: 'auto' }, // Atur lebar kolom menjadi otomatis
+                    0: { cellWidth: 'auto' },
                     1: { cellWidth: 'auto' },
-                    2: { cellWidth: 'auto', halign: 'center' },
+                    2: { cellWidth: 'auto', halign: 'center', cellWidth: 20 }, // Perbaiki lebar sel untuk gambar
                     3: { cellWidth: 'auto' }
                 },
                 didDrawCell: (data) => {
                     if (data.column.index === 2 && data.cell.raw && data.cell.raw.image) {
-                        doc.addImage(data.cell.raw.image, 'JPEG', data.cell.x + (data.cell.width - imageSize) / 2, data.cell.y + (data.cell.height - imageSize) / 2, imageSize, imageSize);
+                        doc.addImage(data.cell.raw.image, 'JPEG', data.cell.x + (data.cell.width - data.cell.raw.width) / 2, data.cell.y + (data.cell.height - data.cell.raw.height) / 2, data.cell.raw.width, data.cell.raw.height);
                     }
                 }
             });
